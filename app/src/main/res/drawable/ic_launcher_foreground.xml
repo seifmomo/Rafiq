@@ -1,0 +1,23 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer circle glow -->
+    <path
+        android:fillColor="#FF6B35"
+        android:fillAlpha="0.08"
+        android:pathData="M54,54m-38,0a38,38 0,1 1,76 0a38,38 0,1 1,-76 0" />
+
+    <!-- Circle background -->
+    <path
+        android:fillColor="#FF6B35"
+        android:pathData="M54,54m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0" />
+
+    <!-- R letter path (bold, modern) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M44,40v28h4v-11.2l3.2,-3.2l6.8,14.4h4.4l-7.6,-16c2.8,-0.8 4.8,-3.2 4.8,-6.4c0,-3.6 -2.8,-5.6 -7.2,-5.6h-8.4zM48,43.2h4.4c2.4,0 3.6,1.2 3.6,3.2s-1.2,3.2 -3.6,3.2h-4.4v-6.4z" />
+
+</vector>

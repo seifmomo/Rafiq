@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">رافق</string>
+    <string name="app_short_description">رفيقك الذكي</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_map">الخريطة</string>
+    <string name="nav_voice">المساعد الصوتي</string>
+    <string name="nav_settings">الإعدادات</string>
+    <string name="nav_sos">طوارئ SOS</string>
+    <string name="nav_be_my_eyes">كن عيني</string>
+    <string name="nav_learning">التعلم</string>
+    <string name="nav_awareness">الحقوق والتوعية</string>
+    <string name="nav_hospital">المستشفى</string>
+    <string name="nav_add_place">إضافة مكان</string>
+
+    <!-- Home Screen -->
+    <string name="welcome_title">مرحباً بك في رافق</string>
+    <string name="your_points">نقاطك</string>
+    <string name="map_places">الخريطة والأماكن</string>
+    <string name="voice_assistant">المساعد الصوتي</string>
+    <string name="learn">تعلم</string>
+    <string name="rights">حقوق</string>
+    <string name="hospital">مستشفى</string>
+    <string name="be_my_eyes">كن عيني</string>
+    <string name="emergency_sos">طوارئ SOS</string>
+    <string name="home_screen_desc">الشاشة الرئيسية لتطبيق رافق</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="smart_glasses">النظارات الذكية</string>
+    <string name="glasses_connected">متصل بنظارات رافق</string>
+    <string name="glasses_disconnected">غير متصل</string>
+    <string name="connect_glasses">اتصل بالنظارات</string>
+    <string name="disconnect">قطع الاتصال</string>
+    <string name="scanning">جاري المسح…</string>
+    <string name="live_sensor_distance">مسافة الاستشعار المباشر</string>
+    <string name="obstacle_detected">تم اكتشاف عائق!</string>
+    <string name="emergency_contact">جهة اتصال طارئة</string>
+    <string name="phone_number">رقم الهاتف</string>
+    <string name="save_contact">حفظ جهة الاتصال</string>
+    <string name="contact_saved">تم حفظ جهة الاتصال</string>
+    <string name="appearance">المظهر</string>
+    <string name="theme">السمة</string>
+    <string name="light_mode">فاتح</string>
+    <string name="dark_mode">داكن</string>
+    <string name="system_mode">حسب النظام</string>
+
+    <!-- Language -->
+    <string name="language">اللغة</string>
+    <string name="language_en">English</string>
+    <string name="language_ar">العربية</string>
+    <string name="language_fr">Français</string>
+    <string name="language_restart_toast">سيتم تغيير اللغة عند إعادة التشغيل</string>
+
+    <!-- Text & Font -->
+    <string name="text_display">النص والعرض</string>
+    <string name="font_size">حجم الخط</string>
+    <string name="font_size_small">صغير</string>
+    <string name="font_size_normal">عادي</string>
+    <string name="font_size_large">كبير</string>
+    <string name="font_size_xlarge">كبير جداً</string>
+    <string name="font_family">نمط الخط</string>
+    <string name="font_default">افتراضي</string>
+    <string name="font_serif">Serif</string>
+    <string name="font_sans_serif">Sans Serif</string>
+    <string name="font_monospace">Monospace</string>
+
+    <!-- Speech -->
+    <string name="speech_settings">إعدادات الكلام</string>
+    <string name="speech_rate">سرعة الكلام</string>
+    <string name="speech_rate_slow">بطيء</string>
+    <string name="speech_rate_normal">عادي</string>
+    <string name="speech_rate_fast">سريع</string>
+    <string name="speech_rate_faster">أسرع</string>
+
+    <!-- Data Backup -->
+    <string name="data_backup">النسخ الاحتياطي</string>
+    <string name="backup_data">نسخ احتياطي</string>
+    <string name="restore_data">استعادة</string>
+    <string name="backup_success">تم إنشاء النسخ الاحتياطي بنجاح</string>
+    <string name="backup_failed">فشل النسخ الاحتياطي</string>
+    <string name="restore_success">تم استعادة البيانات بنجاح</string>
+    <string name="restore_failed">فشلت الاستعادة</string>
+    <string name="auto_backup_enabled">النسخ الاحتياطي التلقائي مفعل</string>
+
+    <!-- Accessibility -->
+    <string name="accessibility">إمكانية الوصول</string>
+    <string name="haptic_feedback">الاهتزاز عند اللمس</string>
+    <string name="haptic_feedback_desc">اهتزاز عند الضغط على الأزرار</string>
+    <string name="high_contrast">وضع التباين العالي</string>
+    <string name="high_contrast_desc">زيادة تباين الألوان لتحسين الرؤية</string>
+
+    <!-- Map -->
+    <string name="map_title">الخريطة</string>
+    <string name="add_place">إضافة مكان</string>
+    <string name="search_places">بحث عن أماكن…</string>
+
+    <!-- SOS -->
+    <string name="sos_title">طوارئ SOS</string>
+    <string name="sos_send_location">إرسال موقعي</string>
+    <string name="sos_call_emergency">اتصال الطوارئ</string>
+    <string name="sos_contact_emergency">جهة اتصال الطوارئ</string>
+
+    <!-- General Actions -->
+    <string name="back">رجوع</string>
+    <string name="save">حفظ</string>
+    <string name="cancel">إلغاء</string>
+    <string name="confirm">تأكيد</string>
+    <string name="delete">حذف</string>
+    <string name="loading">جارٍ التحميل…</string>
+    <string name="error_generic">حدث خطأ ما</string>
+    <string name="retry">إعادة المحاولة</string>
+</resources>

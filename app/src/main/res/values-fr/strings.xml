@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RAFIQ</string>
+    <string name="app_short_description">Votre compagnon intelligent</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Accueil</string>
+    <string name="nav_map">Carte</string>
+    <string name="nav_voice">Assistant Vocal</string>
+    <string name="nav_settings">Paramètres</string>
+    <string name="nav_sos">SOS Urgence</string>
+    <string name="nav_be_my_eyes">Sois Mes Yeux</string>
+    <string name="nav_learning">Apprentissage</string>
+    <string name="nav_awareness">Droits &amp; Sensibilisation</string>
+    <string name="nav_hospital">Hôpital</string>
+    <string name="nav_add_place">Ajouter un Lieu</string>
+
+    <!-- Home Screen -->
+    <string name="welcome_title">Bienvenue sur RAFIQ</string>
+    <string name="your_points">Vos Points</string>
+    <string name="map_places">Carte &amp; Lieux</string>
+    <string name="voice_assistant">Assistant Vocal</string>
+    <string name="learn">Apprendre</string>
+    <string name="rights">Droits</string>
+    <string name="hospital">Hôpital</string>
+    <string name="be_my_eyes">Sois Mes Yeux</string>
+    <string name="emergency_sos">SOS URGENCE</string>
+    <string name="home_screen_desc">Écran d\'accueil Rafiq</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Paramètres</string>
+    <string name="smart_glasses">Lunettes Intelligentes</string>
+    <string name="glasses_connected">Connecté aux Lunettes RAFIQ</string>
+    <string name="glasses_disconnected">Déconnecté</string>
+    <string name="connect_glasses">Connecter les Lunettes</string>
+    <string name="disconnect">Déconnecter</string>
+    <string name="scanning">Scan…</string>
+    <string name="live_sensor_distance">Distance Capteur</string>
+    <string name="obstacle_detected">Obstacle Détecté !</string>
+    <string name="emergency_contact">Contact d\'Urgence</string>
+    <string name="phone_number">Numéro de Téléphone</string>
+    <string name="save_contact">Enregistrer</string>
+    <string name="contact_saved">Contact enregistré</string>
+    <string name="appearance">Apparence</string>
+    <string name="theme">Thème</string>
+    <string name="light_mode">Clair</string>
+    <string name="dark_mode">Sombre</string>
+    <string name="system_mode">Système</string>
+
+    <!-- Language -->
+    <string name="language">Langue</string>
+    <string name="language_en">English</string>
+    <string name="language_ar">العربية</string>
+    <string name="language_fr">Français</string>
+    <string name="language_restart_toast">La langue changera au prochain démarrage</string>
+
+    <!-- Text & Font -->
+    <string name="text_display">Texte &amp; Affichage</string>
+    <string name="font_size">Taille du Texte</string>
+    <string name="font_size_small">Petit</string>
+    <string name="font_size_normal">Normal</string>
+    <string name="font_size_large">Grand</string>
+    <string name="font_size_xlarge">Très Grand</string>
+    <string name="font_family">Style de Police</string>
+    <string name="font_default">Défaut</string>
+    <string name="font_serif">Serif</string>
+    <string name="font_sans_serif">Sans Serif</string>
+    <string name="font_monospace">Monospace</string>
+
+    <!-- Speech -->
+    <string name="speech_settings">Paramètres Vocaux</string>
+    <string name="speech_rate">Vitesse de Parole</string>
+    <string name="speech_rate_slow">Lente</string>
+    <string name="speech_rate_normal">Normale</string>
+    <string name="speech_rate_fast">Rapide</string>
+    <string name="speech_rate_faster">Très Rapide</string>
+
+    <!-- Data Backup -->
+    <string name="data_backup">Sauvegarde</string>
+    <string name="backup_data">Sauvegarder</string>
+    <string name="restore_data">Restaurer</string>
+    <string name="backup_success">Sauvegarde réussie</string>
+    <string name="backup_failed">Échec de la sauvegarde</string>
+    <string name="restore_success">Données restaurées</string>
+    <string name="restore_failed">Échec de la restauration</string>
+    <string name="auto_backup_enabled">Sauvegarde automatique activée</string>
+
+    <!-- Accessibility -->
+    <string name="accessibility">Accessibilité</string>
+    <string name="haptic_feedback">Retour Haptique</string>
+    <string name="haptic_feedback_desc">Vibrer lors des appuis</string>
+    <string name="high_contrast">Contraste Élevé</string>
+    <string name="high_contrast_desc">Augmenter le contraste des couleurs</string>
+
+    <!-- Map -->
+    <string name="map_title">Carte</string>
+    <string name="add_place">Ajouter un Lieu</string>
+    <string name="search_places">Rechercher…</string>
+
+    <!-- SOS -->
+    <string name="sos_title">SOS Urgence</string>
+    <string name="sos_send_location">Envoyer Ma Position</string>
+    <string name="sos_call_emergency">Appeler les Urgences</string>
+    <string name="sos_contact_emergency">Contacter l\'Urgence</string>
+
+    <!-- General Actions -->
+    <string name="back">Retour</string>
+    <string name="save">Enregistrer</string>
+    <string name="cancel">Annuler</string>
+    <string name="confirm">Confirmer</string>
+    <string name="delete">Supprimer</string>
+    <string name="loading">Chargement…</string>
+    <string name="error_generic">Une erreur est survenue</string>
+    <string name="retry">Réessayer</string>
+</resources>

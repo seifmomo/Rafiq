@@ -31,18 +31,14 @@ router.get('/stats', authenticateToken, async (req, res) => {
   try {
     const result = await db.query(
       `SELECT
-        COUNT(*) FILTER (WHERE sender = 'user') as total_chat_messages,
-        COUNT(*) FILTER (WHERE reason = 'chat_message') as chat_points_earned,
+        (SELECT COUNT(*) FROM chat_messages WHERE user_id = $1 AND sender = 'user') as total_chat_messages,
+        (SELECT COALESCE(SUM(points), 0) FROM score_events WHERE user_id = $1 AND reason = 'chat_message') as chat_points_earned,
         (SELECT COUNT(*) FROM sos_alerts WHERE user_id = $1 AND status != 'cancelled') as total_sos_alerts,
         (SELECT COUNT(*) FROM places WHERE user_id = $1) as total_places,
         (SELECT COUNT(*) FROM contacts WHERE user_id = $1) as total_contacts,
         (SELECT COUNT(*) FROM medications WHERE user_id = $1) as total_medications,
         (SELECT COUNT(*) FROM score_events WHERE user_id = $1) as total_score_events,
-        total_points as current_points
-       FROM chat_messages
-       FULL JOIN score_events ON true
-       WHERE chat_messages.user_id = $1
-       GROUP BY total_points`,
+        (SELECT COALESCE(total_points, 0) FROM users WHERE id = $1) as current_points`,
       [req.user.id]
     );
 

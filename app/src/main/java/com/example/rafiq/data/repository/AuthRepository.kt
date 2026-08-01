@@ -5,6 +5,7 @@ import com.example.rafiq.data.local.UserPreferences
 import com.example.rafiq.data.remote.api.AuthApi
 import com.example.rafiq.data.remote.api.UserApi
 import com.example.rafiq.data.remote.dto.*
+import org.json.JSONObject
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,8 +30,7 @@ class AuthRepository @Inject constructor(
                 userPreferences.setLoggedIn(true)
                 Result.Success(body)
             } else {
-                val errorBody = response.errorBody()?.string() ?: "Login failed"
-                Result.Error(errorBody)
+                parseError(response.errorBody()?.string(), "Login failed")
             }
         } catch (e: Exception) {
             Result.Error(e.localizedMessage ?: "Network error")
@@ -46,8 +46,7 @@ class AuthRepository @Inject constructor(
                 userPreferences.setLoggedIn(true)
                 Result.Success(body)
             } else {
-                val errorBody = response.errorBody()?.string() ?: "Registration failed"
-                Result.Error(errorBody)
+                parseError(response.errorBody()?.string(), "Registration failed")
             }
         } catch (e: Exception) {
             Result.Error(e.localizedMessage ?: "Network error")
@@ -109,8 +108,7 @@ class AuthRepository @Inject constructor(
             if (response.isSuccessful) {
                 Result.Success(response.body()!!.message)
             } else {
-                val errorBody = response.errorBody()?.string() ?: "Failed to change password"
-                Result.Error(errorBody)
+                parseError(response.errorBody()?.string(), "Failed to change password")
             }
         } catch (e: Exception) {
             Result.Error(e.localizedMessage ?: "Network error")
@@ -142,6 +140,18 @@ class AuthRepository @Inject constructor(
             }
         } catch (e: Exception) {
             Result.Error(e.localizedMessage ?: "Network error")
+        }
+    }
+
+    private fun parseError(errorBody: String?, fallback: String): Result.Error {
+        val body = errorBody ?: return Result.Error(fallback)
+        return try {
+            val json = JSONObject(body)
+            val message = json.optString("error").ifEmpty { fallback }
+            val code = json.optString("code").ifEmpty { null }
+            Result.Error(message, code)
+        } catch (e: Exception) {
+            Result.Error(if (body.isBlank()) fallback else body)
         }
     }
 }

@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rafiq.ui.theme.NeonOrange
 import com.example.rafiq.ui.theme.NeonOrangeLight
+import com.example.rafiq.ui.components.RafiqTopBar
 import com.example.rafiq.data.remote.dto.LeaderboardEntryDto
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,18 +74,10 @@ fun CompanionScoreScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Companion Score") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+            RafiqTopBar(
+                title = "Companion Score",
+                subtitle = "Earn points for every action",
+                onBack = { navController.popBackStack() }
             )
         }
     ) { padding ->

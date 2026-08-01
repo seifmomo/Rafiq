@@ -15,6 +15,15 @@ interface ChatMessageDao {
     @Query("SELECT * FROM chat_messages WHERE id = :id LIMIT 1")
     suspend fun getMessageById(id: String): ChatMessage?
 
+    @Query("SELECT * FROM chat_messages WHERE sender = :sender ORDER BY timestamp DESC")
+    fun getMessagesBySender(sender: String): Flow<List<ChatMessage>>
+
+    @Query("SELECT * FROM chat_messages ORDER BY timestamp ASC")
+    suspend fun getAllMessagesOnce(): List<ChatMessage>
+
+    @Query("DELETE FROM chat_messages")
+    suspend fun clearAll()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMessage(message: ChatMessage)
 

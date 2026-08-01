@@ -1,5 +1,10 @@
 package com.example.rafiq.presentation.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -54,7 +59,19 @@ fun RafiqNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = startDestination,
+        enterTransition = {
+            slideInHorizontally(tween(280)) { it / 4 } + fadeIn(tween(280))
+        },
+        exitTransition = {
+            fadeOut(tween(180))
+        },
+        popEnterTransition = {
+            fadeIn(tween(220))
+        },
+        popExitTransition = {
+            slideOutHorizontally(tween(220)) { it / 4 } + fadeOut(tween(220))
+        }
     ) {
         composable(Screen.Login.route) {
             LoginScreen(

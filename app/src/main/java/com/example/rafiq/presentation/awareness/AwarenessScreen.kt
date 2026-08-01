@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.rafiq.ui.components.RafiqTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,18 +40,10 @@ fun AwarenessScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Awareness & Rights") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+            RafiqTopBar(
+                title = "Awareness & Rights",
+                subtitle = "Safety information & hotlines",
+                onBack = { navController.popBackStack() }
             )
         }
     ) { padding ->

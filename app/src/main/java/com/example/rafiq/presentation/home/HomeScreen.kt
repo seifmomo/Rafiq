@@ -1,5 +1,10 @@
 package com.example.rafiq.presentation.home
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
@@ -77,6 +82,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rafiq.presentation.navigation.Screen
@@ -103,6 +109,26 @@ fun HomeScreen(
     var showWhatsNew by remember { mutableStateOf(false) }
     val disabilityType by userPreferences.disabilityType.collectAsState(initial = "")
     var showDisabilityDialog by remember { mutableStateOf(false) }
+
+    // Request notification permission on Android 13+ so SOS/medication alerts can reach the user
+    if (Build.VERSION.SDK_INT >= 33) {
+        val notificationPermissionLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission()
+        ) { }
+        val notificationPermissionRequested = remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            if (!notificationPermissionRequested.value) {
+                notificationPermissionRequested.value = true
+                val granted = ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+                if (!granted) {
+                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            }
+        }
+    }
 
     // Use a session-based state to ensure it only shows once per app session if version is low
     var sessionDialogShown by remember { mutableStateOf(false) }

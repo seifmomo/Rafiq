@@ -77,6 +77,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.rafiq.ui.components.RafiqTopBar
 import com.example.rafiq.data.local.UserPreferences
 import com.example.rafiq.ui.theme.ErrorRed
 import com.example.rafiq.ui.theme.ErrorRedBright
@@ -175,27 +176,13 @@ fun SosScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        "Emergency SOS",
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 1.sp
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        viewModel.cancelSos()
-                        navController.popBackStack()
-                    }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ErrorRed,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
+            RafiqTopBar(
+                title = "Emergency SOS",
+                subtitle = "Fall detected — stay calm",
+                onBack = {
+                    viewModel.cancelSos()
+                    navController.popBackStack()
+                }
             )
         }
     ) { padding ->

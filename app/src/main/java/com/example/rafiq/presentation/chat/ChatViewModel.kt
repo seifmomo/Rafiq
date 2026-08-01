@@ -10,8 +10,10 @@ import com.example.rafiq.data.remote.dto.CreateMessageRequest
 import com.example.rafiq.data.remote.dto.SyncMessagesRequest
 import com.example.rafiq.data.remote.GeminiManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.UUID
@@ -27,6 +29,9 @@ class ChatViewModel @Inject constructor(
 
     val messages: StateFlow<List<ChatMessage>> = chatMessageDao.getAllMessages()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _isTyping = MutableStateFlow(false)
+    val isTyping: StateFlow<Boolean> = _isTyping.asStateFlow()
 
     init {
         syncFromCloud()
@@ -54,7 +59,9 @@ class ChatViewModel @Inject constructor(
 
             userPreferences.addPoints(10)
 
+            _isTyping.value = true
             val aiResponse = geminiManager.generateResponse(text)
+            _isTyping.value = false
 
             val replyId = UUID.randomUUID().toString()
             val replyTimestamp = System.currentTimeMillis()
@@ -73,6 +80,17 @@ class ChatViewModel @Inject constructor(
                     CreateMessageRequest(replyId, aiResponse, "rafiq", replyTimestamp)
                 )
             } catch (_: Exception) {}
+        }
+    }
+
+    fun clearHistory() {
+        viewModelScope.launch {
+            try {
+                chatMessageDao.getAllMessagesOnce().forEach { msg ->
+                    runCatching { chatApi.deleteMessage(msg.id) }
+                }
+            } catch (_: Exception) {}
+            chatMessageDao.clearAll()
         }
     }
 

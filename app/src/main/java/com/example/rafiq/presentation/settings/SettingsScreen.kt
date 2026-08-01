@@ -69,6 +69,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rafiq.presentation.hardware.HardwareViewModel
 import com.example.rafiq.presentation.navigation.Screen
+import com.example.rafiq.ui.components.RafiqTopBar
 import com.example.rafiq.util.HapticFeedback
 import kotlinx.coroutines.launch
 
@@ -113,18 +114,10 @@ fun SettingsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Settings") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+            RafiqTopBar(
+                title = "Settings",
+                subtitle = "Personalize your experience",
+                onBack = { navController.popBackStack() }
             )
         }
     ) { padding ->
@@ -472,6 +465,19 @@ fun SettingsScreen(
                 )
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            val version = try {
+                context.packageManager.getPackageInfo(context.packageName, 0).versionName
+            } catch (_: Exception) {
+                "1.0"
+            }
+            Text(
+                "RAFIQ v$version",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
             Spacer(modifier = Modifier.height(24.dp))
         }
     }

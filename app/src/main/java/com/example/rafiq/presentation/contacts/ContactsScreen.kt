@@ -65,6 +65,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rafiq.data.local.Contact
+import com.example.rafiq.ui.components.RafiqEmptyState
+import com.example.rafiq.ui.components.RafiqTopBar
 import com.example.rafiq.ui.theme.DeepNavy
 import com.example.rafiq.ui.theme.NeonOrange
 
@@ -80,20 +82,10 @@ fun ContactsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text("My Contacts", fontWeight = FontWeight.Black)
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
+            RafiqTopBar(
+                title = "My Contacts",
+                subtitle = "${contacts.size} saved",
+                onBack = { navController.popBackStack() }
             )
         },
         floatingActionButton = {
@@ -105,8 +97,7 @@ fun ContactsScreen(
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Contact")
             }
-        },
-        containerColor = Color.Transparent
+        }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -123,41 +114,11 @@ fun ContactsScreen(
                 )
         ) {
             if (contacts.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(
-                            modifier = Modifier
-                                .size(80.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Person,
-                                contentDescription = null,
-                                modifier = Modifier.size(40.dp),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            "No contacts yet",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Text(
-                            "Tap + to add a contact",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                        )
-                    }
-                }
+                RafiqEmptyState(
+                    icon = Icons.Default.Person,
+                    title = "No contacts yet",
+                    subtitle = "Tap + to add a contact"
+                )
             } else {
                 LazyColumn(
                     modifier = Modifier

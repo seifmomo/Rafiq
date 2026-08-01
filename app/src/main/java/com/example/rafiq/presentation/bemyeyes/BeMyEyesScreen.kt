@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.rafiq.ui.components.RafiqTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,21 +40,13 @@ fun BeMyEyesScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Be My Eyes") },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        viewModel.endCall()
-                        navController.popBackStack()
-                    }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.DarkGray,
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White
-                )
+            RafiqTopBar(
+                title = "Be My Eyes",
+                subtitle = "Live volunteer camera",
+                onBack = {
+                    viewModel.endCall()
+                    navController.popBackStack()
+                }
             )
         }
     ) { padding ->

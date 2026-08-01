@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.rafiq.ui.components.RafiqTopBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -98,18 +99,10 @@ fun AddPlaceScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Add Equipped Place") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+            RafiqTopBar(
+                title = "Add Equipped Place",
+                subtitle = "Earn +50 points",
+                onBack = { navController.popBackStack() }
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }

@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.rafiq.ui.components.RafiqTopBar
 import com.example.rafiq.ui.theme.NeonOrange
 import com.example.rafiq.ui.theme.NeonOrangeLight
 
@@ -57,18 +58,10 @@ fun VoiceScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Voice & Sign Language") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = NeonOrange,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+            RafiqTopBar(
+                title = "Voice & Sign Language",
+                subtitle = "Speak to RAFIQ",
+                onBack = { navController.popBackStack() }
             )
         }
     ) { padding ->

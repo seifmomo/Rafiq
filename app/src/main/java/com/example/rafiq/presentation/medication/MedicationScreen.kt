@@ -1,5 +1,8 @@
 package com.example.rafiq.presentation.medication
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,11 +20,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.NotificationImportant
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -35,8 +39,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -47,12 +49,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rafiq.data.local.Medication
+import com.example.rafiq.ui.components.RafiqEmptyState
+import com.example.rafiq.ui.components.RafiqTopBar
+import com.example.rafiq.ui.theme.ErrorRed
 import com.example.rafiq.ui.theme.NeonOrange
+import com.example.rafiq.ui.theme.SuccessGreen
+import com.example.rafiq.ui.theme.WarningOrange
 import androidx.compose.material3.ExperimentalMaterial3Api
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,18 +74,9 @@ fun MedicationScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Medication Reminders") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = NeonOrange,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+            RafiqTopBar(
+                title = "Medication Reminders",
+                onBack = { navController.popBackStack() }
             )
         },
         floatingActionButton = {
@@ -93,30 +92,16 @@ fun MedicationScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
+                    .padding(padding)
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.Medication,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        "No medications yet",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        "Tap + to add a medication reminder",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                }
+                RafiqEmptyState(
+                    icon = Icons.Default.Medication,
+                    title = "No medications yet",
+                    subtitle = "Tap + to add a medication reminder"
+                )
             }
         } else {
+            val nextDose = nextUpcomingDose(medications)
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -124,11 +109,21 @@ fun MedicationScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                if (nextDose != null) {
+                    item {
+                        NextDoseCard(nextDose)
+                    }
+                }
                 items(medications, key = { it.id }) { medication ->
-                    MedicationCard(
-                        medication = medication,
-                        onDelete = { viewModel.deleteMedication(medication) }
-                    )
+                    AnimatedVisibility(
+                        visible = true,
+                        enter = slideInVertically() + fadeIn()
+                    ) {
+                        MedicationCard(
+                            medication = medication,
+                            onDelete = { viewModel.deleteMedication(medication) }
+                        )
+                    }
                 }
             }
         }
@@ -143,6 +138,96 @@ fun MedicationScreen(
             }
         )
     }
+}
+
+private data class NextDose(
+    val medication: Medication,
+    val minutesFromNow: Long
+)
+
+private fun nextUpcomingDose(medications: List<Medication>): NextDose? {
+    val now = java.util.Calendar.getInstance()
+    val nowMinutes = now.get(java.util.Calendar.HOUR_OF_DAY) * 60 + now.get(java.util.Calendar.MINUTE)
+
+    var best: NextDose? = null
+    for (med in medications) {
+        val parts = med.time.split(":")
+        val hour = parts.getOrNull(0)?.toIntOrNull() ?: continue
+        val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
+        val doseMinutes = hour * 60 + minute
+        val diff = if (doseMinutes >= nowMinutes) {
+            (doseMinutes - nowMinutes).toLong()
+        } else {
+            ((24 * 60 - nowMinutes) + doseMinutes).toLong()
+        }
+        if (best == null || diff < best.minutesFromNow) {
+            best = NextDose(med, diff)
+        }
+    }
+    return best
+}
+
+@Composable
+private fun NextDoseCard(nextDose: NextDose) {
+    val overdue = nextDose.minutesFromNow > 12 * 60
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (overdue) WarningOrange.copy(alpha = 0.15f) else SuccessGreen.copy(alpha = 0.12f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (overdue) WarningOrange.copy(alpha = 0.25f) else SuccessGreen.copy(alpha = 0.25f)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    if (overdue) Icons.Default.NotificationImportant else Icons.Default.Alarm,
+                    contentDescription = null,
+                    tint = if (overdue) WarningOrange else SuccessGreen,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    if (overdue) "Missed yesterday" else "Next dose",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = if (overdue) WarningOrange else SuccessGreen
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    "${nextDose.medication.name} at ${nextDose.medication.time}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    formatTimeUntil(nextDose.minutesFromNow),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+private fun formatTimeUntil(minutes: Long): String {
+    if (minutes == 0L) return "Due now"
+    val h = minutes / 60
+    val m = minutes % 60
+    return if (h > 0) "in $h h ${m}m" else "in $m min"
 }
 
 @Composable

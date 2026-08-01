@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rafiq.presentation.navigation.Screen
+import com.example.rafiq.ui.components.RafiqTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,18 +45,10 @@ fun MapScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Map & Places") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+            RafiqTopBar(
+                title = "Map & Places",
+                subtitle = "Explore equipped locations",
+                onBack = { navController.popBackStack() }
             )
         },
         floatingActionButton = {

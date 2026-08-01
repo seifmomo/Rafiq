@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,7 +34,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Gavel
@@ -80,6 +78,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -108,6 +107,7 @@ fun HomeScreen(
     val whatsNewVersion by userPreferences.whatsNewVersion.collectAsState(initial = 999)
     var showWhatsNew by remember { mutableStateOf(false) }
     val disabilityType by userPreferences.disabilityType.collectAsState(initial = "")
+    val disabilityPromptShown by userPreferences.disabilityPromptShown.collectAsState(initial = false)
     var showDisabilityDialog by remember { mutableStateOf(false) }
 
     // Request notification permission on Android 13+ so SOS/medication alerts can reach the user
@@ -133,12 +133,12 @@ fun HomeScreen(
     // Use a session-based state to ensure it only shows once per app session if version is low
     var sessionDialogShown by remember { mutableStateOf(false) }
 
-    LaunchedEffect(disabilityType, whatsNewVersion) {
+    LaunchedEffect(disabilityType, whatsNewVersion, disabilityPromptShown) {
         if (!sessionDialogShown) {
             if (whatsNewVersion < 1) {
                 showWhatsNew = true
                 sessionDialogShown = true
-            } else if (disabilityType.isEmpty()) {
+            } else if (disabilityType.isEmpty() && !disabilityPromptShown) {
                 showDisabilityDialog = true
                 sessionDialogShown = true
             }
@@ -151,7 +151,7 @@ fun HomeScreen(
                 showWhatsNew = false
                 scope.launch {
                     userPreferences.setWhatsNewVersion(1)
-                    if (disabilityType.isEmpty()) {
+                    if (disabilityType.isEmpty() && !disabilityPromptShown) {
                         showDisabilityDialog = true
                     }
                 }
@@ -162,7 +162,10 @@ fun HomeScreen(
     if (showDisabilityDialog) {
         var selectedDisability by remember { mutableStateOf("") }
         AlertDialog(
-            onDismissRequest = { },
+            onDismissRequest = {
+                scope.launch { userPreferences.setDisabilityPromptShown(true) }
+                showDisabilityDialog = false
+            },
             shape = RoundedCornerShape(24.dp),
             containerColor = MaterialTheme.colorScheme.surface,
             title = {
@@ -225,6 +228,7 @@ fun HomeScreen(
                     onClick = {
                         scope.launch {
                             userPreferences.setDisabilityType(selectedDisability)
+                            userPreferences.setDisabilityPromptShown(true)
                             userPreferences.addPoints(50)
                         }
                         viewModel.syncDisabilityType(selectedDisability)
@@ -238,6 +242,16 @@ fun HomeScreen(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Continue", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        scope.launch { userPreferences.setDisabilityPromptShown(true) }
+                        showDisabilityDialog = false
+                    }
+                ) {
+                    Text("Skip")
                 }
             }
         )
@@ -391,115 +405,36 @@ fun HomeScreen(
                     modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
                 )
 
-                LuxuryMenuItem(
-                    title = "Map & Places",
-                    subtitle = "Explore your neighborhood safely",
-                    icon = Icons.Default.LocationOn,
-                    gradientColors = listOf(Color(0xFF3B82F6), Color(0xFF60A5FA)),
-                    onClick = {
-                        HapticFeedback.lightClick(context)
-                        navController.navigate(Screen.Map.route)
-                    }
+                val tools = listOf(
+                    ToolItem("Map & Places", "Explore nearby", Icons.Default.LocationOn, listOf(Color(0xFF3B82F6), Color(0xFF60A5FA)), Screen.Map.route),
+                    ToolItem("Voice Assistant", "Speak to RAFIQ", Icons.Default.Mic, listOf(Color(0xFF0066CC), Color(0xFF00E5FF)), Screen.Voice.route),
+                    ToolItem("Learn & Exercise", "Brain + daily training", Icons.Default.FitnessCenter, listOf(Color(0xFF10B981), Color(0xFF34D399)), Screen.Learning.route),
+                    ToolItem("Safety Rights", "Know your rights", Icons.Default.Gavel, listOf(Color(0xFFF59E0B), Color(0xFFFBBF24)), Screen.Awareness.route),
+                    ToolItem("Hospital Finder", "Nearby medical care", Icons.Default.LocalHospital, listOf(Color(0xFFEF4444), Color(0xFFF87171)), Screen.Hospital.route),
+                    ToolItem("Contacts", "Emergency contacts", Icons.Default.People, listOf(Color(0xFF8B5CF6), Color(0xFFA78BFA)), Screen.Contacts.route),
+                    ToolItem("Medication", "Daily reminders", Icons.Default.Medication, listOf(Color(0xFFEC4899), Color(0xFFF472B6)), Screen.Medication.route),
+                    ToolItem("Chat", "Ask the assistant", Icons.AutoMirrored.Filled.Chat, listOf(Color(0xFF14B8A6), Color(0xFF2DD4BF)), Screen.Chat.route),
+                    ToolItem("Be My Eyes", "Live helper camera", Icons.Default.Visibility, listOf(Color(0xFF06B6D4), Color(0xFF22D3EE)), Screen.BeMyEyes.route),
+                    ToolItem("Settings", "Personalize RAFIQ", Icons.Default.Settings, listOf(Color(0xFF6366F1), Color(0xFF818CF8)), Screen.Settings.route)
                 )
 
-                LuxuryMenuItem(
-                    title = "Voice Assistant",
-                    subtitle = "Speak to control the ecosystem",
-                    icon = Icons.Default.Mic,
-                    gradientColors = listOf(Color(0xFF0066CC), Color(0xFF00E5FF)),
-                    onClick = {
-                        HapticFeedback.lightClick(context)
-                        navController.navigate(Screen.Voice.route)
+                tools.chunked(2).forEach { rowItems ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        rowItems.forEach { item ->
+                            ToolTile(
+                                item = item,
+                                modifier = Modifier.weight(1f),
+                                onClick = {
+                                    HapticFeedback.lightClick(context)
+                                    navController.navigate(item.route)
+                                }
+                            )
+                        }
                     }
-                )
-
-                LuxuryMenuItem(
-                    title = "Learn & Exercise",
-                    subtitle = "Brain training and daily exercises",
-                    icon = Icons.Default.FitnessCenter,
-                    gradientColors = listOf(Color(0xFF10B981), Color(0xFF34D399)),
-                    onClick = {
-                        HapticFeedback.lightClick(context)
-                        navController.navigate(Screen.Learning.route)
-                    }
-                )
-
-                LuxuryMenuItem(
-                    title = "Safety Rights",
-                    subtitle = "Know your rights and safety information",
-                    icon = Icons.Default.Gavel,
-                    gradientColors = listOf(Color(0xFFF59E0B), Color(0xFFFBBF24)),
-                    onClick = {
-                        HapticFeedback.lightClick(context)
-                        navController.navigate(Screen.Awareness.route)
-                    }
-                )
-
-                LuxuryMenuItem(
-                    title = "Hospital Finder",
-                    subtitle = "Locate nearby medical care",
-                    icon = Icons.Default.LocalHospital,
-                    gradientColors = listOf(Color(0xFFEF4444), Color(0xFFF87171)),
-                    onClick = {
-                        HapticFeedback.lightClick(context)
-                        navController.navigate(Screen.Hospital.route)
-                    }
-                )
-
-                LuxuryMenuItem(
-                    title = "Contacts",
-                    subtitle = "Manage emergency contacts",
-                    icon = Icons.Default.People,
-                    gradientColors = listOf(Color(0xFF8B5CF6), Color(0xFFA78BFA)),
-                    onClick = {
-                        HapticFeedback.lightClick(context)
-                        navController.navigate(Screen.Contacts.route)
-                    }
-                )
-
-                LuxuryMenuItem(
-                    title = "Medication Reminders",
-                    subtitle = "Set daily medication alarms",
-                    icon = Icons.Default.Medication,
-                    gradientColors = listOf(Color(0xFFEC4899), Color(0xFFF472B6)),
-                    onClick = {
-                        HapticFeedback.lightClick(context)
-                        navController.navigate(Screen.Medication.route)
-                    }
-                )
-
-                LuxuryMenuItem(
-                    title = "Chat",
-                    subtitle = "Chat with RAFIQ assistant",
-                    icon = Icons.AutoMirrored.Filled.Chat,
-                    gradientColors = listOf(Color(0xFF14B8A6), Color(0xFF2DD4BF)),
-                    onClick = {
-                        HapticFeedback.lightClick(context)
-                        navController.navigate(Screen.Chat.route)
-                    }
-                )
-
-                LuxuryMenuItem(
-                    title = "Be My Eyes",
-                    subtitle = "Connect with live helper camera",
-                    icon = Icons.Default.Visibility,
-                    gradientColors = listOf(Color(0xFF06B6D4), Color(0xFF22D3EE)),
-                    onClick = {
-                        HapticFeedback.lightClick(context)
-                        navController.navigate(Screen.BeMyEyes.route)
-                    }
-                )
-
-                LuxuryMenuItem(
-                    title = "Ecosystem Settings",
-                    subtitle = "Adjust text size, voice, and theme",
-                    icon = Icons.Default.Settings,
-                    gradientColors = listOf(Color(0xFF6366F1), Color(0xFF818CF8)),
-                    onClick = {
-                        HapticFeedback.lightClick(context)
-                        navController.navigate(Screen.Settings.route)
-                    }
-                )
+                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -622,85 +557,85 @@ fun HomeScreen(
     }
 }
 
+private data class ToolItem(
+    val title: String,
+    val subtitle: String,
+    val icon: ImageVector,
+    val gradientColors: List<Color>,
+    val route: String
+)
+
 @Composable
-fun LuxuryMenuItem(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    gradientColors: List<Color>,
-    onClick: () -> Unit
+private fun ToolTile(
+    item: ToolItem,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val animatedScale by animateFloatAsState(
-        targetValue = if (isPressed) 0.97f else 1f,
+        targetValue = if (isPressed) 0.95f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
         ),
-        label = "menuPress"
+        label = "toolPress"
     )
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .scale(animatedScale)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null
             ) { onClick() }
-            .semantics { contentDescription = "$title. $subtitle. Double tap to open." },
-        shape = RoundedCornerShape(24.dp),
+            .semantics {
+                contentDescription = "${item.title}. ${item.subtitle}. Double tap to open."
+            },
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .defaultMinSize(minHeight = 72.dp)
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(14.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .size(52.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(14.dp))
                     .background(
-                        brush = Brush.linearGradient(colors = gradientColors)
+                        brush = Brush.linearGradient(colors = item.gradientColors)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = icon,
+                    imageVector = item.icon,
                     contentDescription = null,
                     tint = Color.White,
-                    modifier = Modifier.size(26.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                modifier = Modifier.size(20.dp)
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = item.title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = item.subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

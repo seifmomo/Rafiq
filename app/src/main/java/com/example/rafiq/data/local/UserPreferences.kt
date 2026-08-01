@@ -32,6 +32,7 @@ class UserPreferences @Inject constructor(
         val INTRO_COMPLETED = booleanPreferencesKey("intro_completed")
         val WHATS_NEW_VERSION = intPreferencesKey("whats_new_version")
         val DISABILITY_TYPE = stringPreferencesKey("disability_type")
+        val DISABILITY_PROMPT_SHOWN = booleanPreferencesKey("disability_prompt_shown")
         val GUARDIAN_MODE = booleanPreferencesKey("guardian_mode")
         val IS_LOGGED_IN = booleanPreferencesKey("is_logged_in")
     }
@@ -46,6 +47,10 @@ class UserPreferences @Inject constructor(
 
     val disabilityType: Flow<String> = context.userPrefsStore.data.map { prefs ->
         prefs[Keys.DISABILITY_TYPE] ?: ""
+    }
+
+    val disabilityPromptShown: Flow<Boolean> = context.userPrefsStore.data.map { prefs ->
+        prefs[Keys.DISABILITY_PROMPT_SHOWN] ?: false
     }
 
     val emergencyContact: Flow<String> = context.userPrefsStore.data.map { prefs ->
@@ -142,6 +147,12 @@ class UserPreferences @Inject constructor(
     suspend fun setDisabilityType(type: String) {
         context.userPrefsStore.edit { prefs ->
             prefs[Keys.DISABILITY_TYPE] = type
+        }
+    }
+
+    suspend fun setDisabilityPromptShown(shown: Boolean) {
+        context.userPrefsStore.edit { prefs ->
+            prefs[Keys.DISABILITY_PROMPT_SHOWN] = shown
         }
     }
 

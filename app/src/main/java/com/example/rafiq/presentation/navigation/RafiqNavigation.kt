@@ -30,6 +30,7 @@ import com.example.rafiq.presentation.map.MapScreen
 import com.example.rafiq.presentation.medication.MedicationScreen
 import com.example.rafiq.presentation.settings.SettingsScreen
 import com.example.rafiq.presentation.sos.SosScreen
+import com.example.rafiq.presentation.signlanguage.SignLanguageScreen
 import com.example.rafiq.presentation.voice.VoiceScreen
 import kotlinx.coroutines.launch
 
@@ -50,6 +51,7 @@ sealed class Screen(val route: String) {
     object Contacts : Screen("contacts_screen")
     object Medication : Screen("medication_screen")
     object Chat : Screen("chat_screen")
+    object SignLanguage : Screen("sign_language_screen")
 }
 
 @Composable
@@ -154,6 +156,9 @@ fun RafiqNavigation(
         }
         composable(Screen.Chat.route) {
             ChatScreen(navController = navController)
+        }
+        composable(Screen.SignLanguage.route) {
+            SignLanguageScreen(navController = navController)
         }
     }
 }

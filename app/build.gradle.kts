@@ -90,6 +90,15 @@ dependencies {
     // Gemini AI
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
 
+    // MediaPipe Gesture Recognizer
+    implementation(libs.mediapipe.tasks.vision)
+
+    // CameraX
+    implementation(libs.camerax.core)
+    implementation(libs.camerax.camera2)
+    implementation(libs.camerax.lifecycle)
+    implementation(libs.camerax.view)
+
     // Retrofit + OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")

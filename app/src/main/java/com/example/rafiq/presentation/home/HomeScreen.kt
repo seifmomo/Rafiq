@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SignLanguage
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Warning
@@ -408,6 +409,7 @@ fun HomeScreen(
                 val tools = listOf(
                     ToolItem("Map & Places", "Explore nearby", Icons.Default.LocationOn, listOf(Color(0xFF3B82F6), Color(0xFF60A5FA)), Screen.Map.route),
                     ToolItem("Voice Assistant", "Speak to RAFIQ", Icons.Default.Mic, listOf(Color(0xFF0066CC), Color(0xFF00E5FF)), Screen.Voice.route),
+                    ToolItem("Sign Language", "Gesture recognition", Icons.Default.SignLanguage, listOf(Color(0xFF7C3AED), Color(0xFFA78BFA)), Screen.SignLanguage.route),
                     ToolItem("Learn & Exercise", "Brain + daily training", Icons.Default.FitnessCenter, listOf(Color(0xFF10B981), Color(0xFF34D399)), Screen.Learning.route),
                     ToolItem("Safety Rights", "Know your rights", Icons.Default.Gavel, listOf(Color(0xFFF59E0B), Color(0xFFFBBF24)), Screen.Awareness.route),
                     ToolItem("Hospital Finder", "Nearby medical care", Icons.Default.LocalHospital, listOf(Color(0xFFEF4444), Color(0xFFF87171)), Screen.Hospital.route),

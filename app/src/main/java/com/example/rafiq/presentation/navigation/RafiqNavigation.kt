@@ -5,13 +5,19 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.rafiq.data.local.UserPreferences
 import com.example.rafiq.presentation.awareness.AwarenessScreen
@@ -32,6 +38,7 @@ import com.example.rafiq.presentation.settings.SettingsScreen
 import com.example.rafiq.presentation.sos.SosScreen
 import com.example.rafiq.presentation.signlanguage.SignLanguageScreen
 import com.example.rafiq.presentation.voice.VoiceScreen
+import com.example.rafiq.ui.components.RafiqBottomNavBar
 import kotlinx.coroutines.launch
 
 sealed class Screen(val route: String) {
@@ -54,111 +61,123 @@ sealed class Screen(val route: String) {
     object SignLanguage : Screen("sign_language_screen")
 }
 
+private val bottomBarRoutes = setOf(
+    Screen.Home.route,
+    Screen.SOS.route,
+    Screen.Medication.route,
+    Screen.Chat.route,
+    Screen.Settings.route
+)
+
 @Composable
 fun RafiqNavigation(
     startDestination: String = Screen.Home.route,
     navController: NavHostController = rememberNavController()
 ) {
-    NavHost(
-        navController = navController,
-        startDestination = startDestination,
-        enterTransition = {
-            slideInHorizontally(tween(280)) { it / 4 } + fadeIn(tween(280))
-        },
-        exitTransition = {
-            fadeOut(tween(180))
-        },
-        popEnterTransition = {
-            fadeIn(tween(220))
-        },
-        popExitTransition = {
-            slideOutHorizontally(tween(220)) { it / 4 } + fadeOut(tween(220))
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    Scaffold(
+        bottomBar = {
+            if (currentRoute in bottomBarRoutes) {
+                RafiqBottomNavBar(
+                    currentRoute = currentRoute,
+                    onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
         }
-    ) {
-        composable(Screen.Login.route) {
-            LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate(Screen.Intro.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+    ) { paddingValues ->
+        NavHost(
+            navController = navController,
+            startDestination = startDestination,
+            modifier = Modifier.padding(paddingValues),
+            enterTransition = { slideInHorizontally(tween(280)) { it / 4 } + fadeIn(tween(280)) },
+            exitTransition = { fadeOut(tween(180)) },
+            popEnterTransition = { fadeIn(tween(220)) },
+            popExitTransition = { slideOutHorizontally(tween(220)) { it / 4 } + fadeOut(tween(220)) }
+        ) {
+            composable(Screen.Login.route) {
+                LoginScreen(
+                    onLoginSuccess = {
+                        navController.navigate(Screen.Intro.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
+            composable(Screen.Intro.route) {
+                val context = LocalContext.current
+                val scope = rememberCoroutineScope()
+                val userPreferences = remember { UserPreferences(context) }
+                val completeIntro: () -> Unit = {
+                    scope.launch { userPreferences.setIntroCompleted(true) }
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Intro.route) { inclusive = true }
                     }
                 }
-            )
-        }
-        composable(Screen.Intro.route) {
-            val context = LocalContext.current
-            val scope = rememberCoroutineScope()
-            val userPreferences = remember { UserPreferences(context) }
-            val completeIntro: () -> Unit = {
-                scope.launch {
-                    userPreferences.setIntroCompleted(true)
-                }
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.Intro.route) { inclusive = true }
-                }
+                IntroScreen(
+                    pages = listOf(
+                        IntroPage("RAFIQ", "Your Companion, Every Step."),
+                        IntroPage("Navigate Life with Confidence", "Real-time guidance, personalized insights, and a companion who never leaves your side."),
+                        IntroPage("AI Powered. Human Centered.", "Smart assistance tailored to your needs, keeping you connected and safe.")
+                    ),
+                    onGetStarted = completeIntro,
+                    onSkip = completeIntro
+                )
             }
-            IntroScreen(
-                pages = listOf(
-                    IntroPage(
-                        title = "RAFIQ",
-                        subtitle = "Your Companion, Every Step."
-                    ),
-                    IntroPage(
-                        title = "Navigate Life with Confidence",
-                        subtitle = "Real-time guidance, personalized insights, and a companion who never leaves your side."
-                    ),
-                    IntroPage(
-                        title = "AI Powered. Human Centered.",
-                        subtitle = "Smart assistance tailored to your needs, keeping you connected and safe."
-                    )
-                ),
-                onGetStarted = completeIntro,
-                onSkip = completeIntro
-            )
-        }
-        composable(Screen.Home.route) {
-            HomeScreen(navController = navController)
-        }
-        composable(Screen.Map.route) {
-            MapScreen(navController = navController)
-        }
-        composable(Screen.Voice.route) {
-            VoiceScreen(navController = navController)
-        }
-        composable(Screen.Settings.route) {
-            SettingsScreen(navController = navController)
-        }
-        composable(Screen.AddPlace.route) {
-            AddPlaceScreen(navController = navController)
-        }
-        composable(Screen.BeMyEyes.route) {
-            BeMyEyesScreen(navController = navController)
-        }
-        composable(Screen.SOS.route) {
-            SosScreen(navController = navController)
-        }
-        composable(Screen.Learning.route) {
-            LearningScreen(navController = navController)
-        }
-        composable(Screen.Awareness.route) {
-            AwarenessScreen(navController = navController)
-        }
-        composable(Screen.Hospital.route) {
-            HospitalScreen(navController = navController)
-        }
-        composable(Screen.CompanionScore.route) {
-            CompanionScoreScreen(navController = navController)
-        }
-        composable(Screen.Contacts.route) {
-            ContactsScreen(navController = navController)
-        }
-        composable(Screen.Medication.route) {
-            MedicationScreen(navController = navController)
-        }
-        composable(Screen.Chat.route) {
-            ChatScreen(navController = navController)
-        }
-        composable(Screen.SignLanguage.route) {
-            SignLanguageScreen(navController = navController)
+            composable(Screen.Home.route) {
+                HomeScreen(navController = navController)
+            }
+            composable(Screen.Map.route) {
+                MapScreen(navController = navController)
+            }
+            composable(Screen.Voice.route) {
+                VoiceScreen(navController = navController)
+            }
+            composable(Screen.Settings.route) {
+                SettingsScreen(navController = navController)
+            }
+            composable(Screen.AddPlace.route) {
+                AddPlaceScreen(navController = navController)
+            }
+            composable(Screen.BeMyEyes.route) {
+                BeMyEyesScreen(navController = navController)
+            }
+            composable(Screen.SOS.route) {
+                SosScreen(navController = navController)
+            }
+            composable(Screen.Learning.route) {
+                LearningScreen(navController = navController)
+            }
+            composable(Screen.Awareness.route) {
+                AwarenessScreen(navController = navController)
+            }
+            composable(Screen.Hospital.route) {
+                HospitalScreen(navController = navController)
+            }
+            composable(Screen.CompanionScore.route) {
+                CompanionScoreScreen(navController = navController)
+            }
+            composable(Screen.Contacts.route) {
+                ContactsScreen(navController = navController)
+            }
+            composable(Screen.Medication.route) {
+                MedicationScreen(navController = navController)
+            }
+            composable(Screen.Chat.route) {
+                ChatScreen(navController = navController)
+            }
+            composable(Screen.SignLanguage.route) {
+                SignLanguageScreen(navController = navController)
+            }
         }
     }
 }

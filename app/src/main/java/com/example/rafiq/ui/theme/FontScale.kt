@@ -32,13 +32,13 @@ fun scaledTypography(scale: FontScale, fontType: FontType): Typography {
     val m = scale.multiplier
     val f = fontType.family
     return Typography(
-        displayLarge = TextStyle(fontFamily = f, fontWeight = FontWeight.Normal, fontSize = (57 * m).sp, lineHeight = (64 * m).sp, letterSpacing = (-0.25 * m).sp),
-        displayMedium = TextStyle(fontFamily = f, fontWeight = FontWeight.Normal, fontSize = (45 * m).sp, lineHeight = (52 * m).sp, letterSpacing = 0.sp),
-        displaySmall = TextStyle(fontFamily = f, fontWeight = FontWeight.Normal, fontSize = (36 * m).sp, lineHeight = (44 * m).sp, letterSpacing = 0.sp),
-        headlineLarge = TextStyle(fontFamily = f, fontWeight = FontWeight.Normal, fontSize = (32 * m).sp, lineHeight = (40 * m).sp, letterSpacing = 0.sp),
-        headlineMedium = TextStyle(fontFamily = f, fontWeight = FontWeight.Normal, fontSize = (28 * m).sp, lineHeight = (36 * m).sp, letterSpacing = 0.sp),
-        headlineSmall = TextStyle(fontFamily = f, fontWeight = FontWeight.Normal, fontSize = (24 * m).sp, lineHeight = (32 * m).sp, letterSpacing = 0.sp),
-        titleLarge = TextStyle(fontFamily = f, fontWeight = FontWeight.Normal, fontSize = (22 * m).sp, lineHeight = (28 * m).sp, letterSpacing = 0.sp),
+        displayLarge = TextStyle(fontFamily = f, fontWeight = FontWeight.Bold, fontSize = (57 * m).sp, lineHeight = (64 * m).sp, letterSpacing = (-0.25 * m).sp),
+        displayMedium = TextStyle(fontFamily = f, fontWeight = FontWeight.Bold, fontSize = (45 * m).sp, lineHeight = (52 * m).sp, letterSpacing = 0.sp),
+        displaySmall = TextStyle(fontFamily = f, fontWeight = FontWeight.Bold, fontSize = (36 * m).sp, lineHeight = (44 * m).sp, letterSpacing = 0.sp),
+        headlineLarge = TextStyle(fontFamily = f, fontWeight = FontWeight.Bold, fontSize = (32 * m).sp, lineHeight = (40 * m).sp, letterSpacing = 0.sp),
+        headlineMedium = TextStyle(fontFamily = f, fontWeight = FontWeight.SemiBold, fontSize = (28 * m).sp, lineHeight = (36 * m).sp, letterSpacing = 0.sp),
+        headlineSmall = TextStyle(fontFamily = f, fontWeight = FontWeight.SemiBold, fontSize = (24 * m).sp, lineHeight = (32 * m).sp, letterSpacing = 0.sp),
+        titleLarge = TextStyle(fontFamily = f, fontWeight = FontWeight.SemiBold, fontSize = (22 * m).sp, lineHeight = (28 * m).sp, letterSpacing = 0.sp),
         titleMedium = TextStyle(fontFamily = f, fontWeight = FontWeight.Medium, fontSize = (16 * m).sp, lineHeight = (24 * m).sp, letterSpacing = (0.15 * m).sp),
         titleSmall = TextStyle(fontFamily = f, fontWeight = FontWeight.Medium, fontSize = (14 * m).sp, lineHeight = (20 * m).sp, letterSpacing = (0.1 * m).sp),
         bodyLarge = TextStyle(fontFamily = f, fontWeight = FontWeight.Normal, fontSize = (16 * m).sp, lineHeight = (24 * m).sp, letterSpacing = (0.5 * m).sp),

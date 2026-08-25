@@ -2,13 +2,19 @@ package com.example.rafiq.presentation.signlanguage
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.ImageFormat
 import android.graphics.Matrix
+import android.graphics.YuvImage
 import android.util.Log
+import androidx.annotation.OptIn
+import androidx.camera.core.ExperimentalGetImage
+import androidx.camera.core.ImageProxy
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizer
 import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResult
+import java.io.ByteArrayOutputStream
 
 class GestureRecognizerHelper(
     private val context: Context,
@@ -16,6 +22,7 @@ class GestureRecognizerHelper(
     private val onError: (String) -> Unit
 ) {
     private var gestureRecognizer: GestureRecognizer? = null
+    val isInitialized: Boolean get() = gestureRecognizer != null
 
     init {
         setupRecognizer()
@@ -38,8 +45,37 @@ class GestureRecognizerHelper(
             gestureRecognizer = GestureRecognizer.createFromOptions(context, options)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create gesture recognizer", e)
-            onError("Failed to initialize gesture recognizer: ${e.message}")
+            gestureRecognizer = null
+            onError("Gesture model not available. Please ensure the model file is included in assets.")
         }
+    }
+
+    @OptIn(ExperimentalGetImage::class)
+    fun imageProxyToBitmap(imageProxy: ImageProxy): Bitmap? {
+        val image = imageProxy.image ?: return null
+        val nv21 = yuv420888ToNv21(image)
+        val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
+        val out = ByteArrayOutputStream()
+        yuvImage.compressToJpeg(android.graphics.Rect(0, 0, image.width, image.height), 80, out)
+        val bytes = out.toByteArray()
+        return android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    }
+
+    private fun yuv420888ToNv21(image: android.media.Image): ByteArray {
+        val yBuffer = image.planes[0].buffer
+        val uBuffer = image.planes[1].buffer
+        val vBuffer = image.planes[2].buffer
+
+        val ySize = yBuffer.remaining()
+        val uSize = uBuffer.remaining()
+        val vSize = vBuffer.remaining()
+
+        val nv21 = ByteArray(ySize + uSize + vSize)
+        yBuffer.get(nv21, 0, ySize)
+        vBuffer.get(nv21, ySize, vSize)
+        uBuffer.get(nv21, ySize + vSize, uSize)
+
+        return nv21
     }
 
     fun recognizeAsync(bitmap: Bitmap, timestampMs: Long) {
@@ -53,7 +89,6 @@ class GestureRecognizerHelper(
             recognizer.recognizeAsync(mpImage, timestampMs)
         } catch (e: Exception) {
             Log.e(TAG, "Recognition error", e)
-            onError("Recognition error: ${e.message}")
         }
     }
 

@@ -37,7 +37,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Gavel
@@ -53,7 +52,6 @@ import androidx.compose.material.icons.filled.Sos
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -262,12 +260,8 @@ private fun HeroHeader(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(DeepBlue, DeepBlueLight, MaterialTheme.colorScheme.background)
-                )
-            )
-            .padding(start = 20.dp, end = 20.dp, top = 36.dp, bottom = 16.dp)
+            .background(DeepBlue)
+            .padding(start = 20.dp, end = 20.dp, top = 40.dp, bottom = 20.dp)
     ) {
         Column {
             Row(
@@ -279,32 +273,23 @@ private fun HeroHeader(
                         text = "RAFIQ",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        letterSpacing = 4.sp,
-                        color = Cyan
+                        letterSpacing = 3.sp,
+                        color = Color.White
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.WbSunny,
-                            contentDescription = null,
-                            tint = WarningAmber,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "$greeting, Friend",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.6f)
-                        )
-                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "$greeting, Friend",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.6f)
+                    )
                 }
 
                 Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color.White.copy(alpha = 0.08f))
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color.White.copy(alpha = 0.1f))
                         .clickable(onClick = onPointsClick)
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
@@ -313,18 +298,18 @@ private fun HeroHeader(
                         tint = WarningAmber,
                         modifier = Modifier.size(16.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "$points",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
+                        text = "$points pts",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
                         color = Color.White
                     )
                 }
             }
 
             if (guardianMode) {
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -360,67 +345,53 @@ private fun AIAssistantSection(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 8.dp)
-            .shadow(8.dp, RoundedCornerShape(24.dp), ambientColor = Cyan.copy(alpha = 0.15f))
+            .shadow(4.dp, RoundedCornerShape(20.dp), ambientColor = Teal.copy(alpha = 0.1f))
             .alpha(scale)
             .clickable(interactionSource = interactionSource, indication = null) { onChatClick() },
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Box(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(Cyan.copy(alpha = 0.12f), Teal.copy(alpha = 0.08f), Color.Transparent)
-                    )
-                )
-                .padding(20.dp)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(brush = Brush.linearGradient(listOf(Cyan, Teal))),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Psychology,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(30.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "RAFIQ Assistant",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Icon(
-                            Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            tint = WarningAmber,
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "Ask me anything",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = OnSurfaceVariant
-                    )
-                }
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(brush = Brush.linearGradient(listOf(Cyan, Teal))),
+                contentAlignment = Alignment.Center
+            ) {
                 Icon(
-                    Icons.Default.ChevronRight,
+                    Icons.Default.Psychology,
                     contentDescription = null,
-                    tint = Cyan,
-                    modifier = Modifier.size(24.dp)
+                    tint = Color.White,
+                    modifier = Modifier.size(26.dp)
                 )
             }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "RAFIQ Assistant",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(modifier = Modifier.height(1.dp))
+                Text(
+                    text = "Ask me anything",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = OnSurfaceVariant
+                )
+            }
+            Icon(
+                Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = OnSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }

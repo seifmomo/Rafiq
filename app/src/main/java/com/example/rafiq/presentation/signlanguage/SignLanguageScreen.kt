@@ -2,7 +2,6 @@ package com.example.rafiq.presentation.signlanguage
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,9 +32,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Handshake
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -43,12 +39,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -66,9 +62,10 @@ import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.rafiq.ui.components.RafiqTopBar
+import com.example.rafiq.ui.theme.Cyan
 import com.example.rafiq.ui.theme.ErrorRed
-import com.example.rafiq.ui.theme.NeonOrange
 import com.example.rafiq.ui.theme.SuccessGreen
+import com.example.rafiq.ui.theme.Teal
 import java.util.concurrent.Executors
 
 @Composable
@@ -105,16 +102,40 @@ fun SignLanguageScreen(
     }
 
     uiState.errorMessage?.let { error ->
-        AlertDialog(
-            onDismissRequest = { viewModel.dismissError() },
-            title = { Text("Error", fontWeight = FontWeight.Bold) },
-            text = { Text(error) },
-            confirmButton = {
-                TextButton(onClick = { viewModel.dismissError() }) {
-                    Text("OK")
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 8.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = ErrorRed.copy(alpha = 0.1f))
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.CameraAlt,
+                    contentDescription = null,
+                    tint = ErrorRed,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Model Not Available",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = ErrorRed
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "The gesture recognition model file is missing. Camera preview is still available.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
-        )
+        }
     }
 
     Scaffold(
@@ -136,6 +157,7 @@ fun SignLanguageScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
+                    helper = viewModel.getHelper(),
                     onFrameAvailable = { bitmap ->
                         viewModel.processFrame(bitmap)
                     }
@@ -157,12 +179,12 @@ fun SignLanguageScreen(
 @Composable
 private fun CameraPreview(
     modifier: Modifier = Modifier,
-    onFrameAvailable: (Bitmap) -> Unit
+    helper: GestureRecognizerHelper?,
+    onFrameAvailable: (android.graphics.Bitmap) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
-    var frameCount by remember { mutableStateOf(0L) }
 
     DisposableEffect(Unit) {
         onDispose { cameraExecutor.shutdown() }
@@ -175,44 +197,36 @@ private fun CameraPreview(
 
                 val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
                 cameraProviderFuture.addListener({
-                    val cameraProvider = cameraProviderFuture.get()
+                    try {
+                        val cameraProvider = cameraProviderFuture.get()
 
-                    val preview = Preview.Builder().build().also {
-                        it.surfaceProvider = previewView.surfaceProvider
-                    }
+                        val preview = Preview.Builder().build().also {
+                            it.surfaceProvider = previewView.surfaceProvider
+                        }
 
-                    val imageAnalysis = ImageAnalysis.Builder()
-                        .setResolutionSelector(
-                            ResolutionSelector.Builder()
-                                .setResolutionStrategy(
-                                    ResolutionStrategy(
-                                        android.util.Size(640, 480),
-                                        ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                        val imageAnalysis = ImageAnalysis.Builder()
+                            .setResolutionSelector(
+                                ResolutionSelector.Builder()
+                                    .setResolutionStrategy(
+                                        ResolutionStrategy(
+                                            android.util.Size(640, 480),
+                                            ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                                        )
                                     )
-                                )
-                                .build()
-                        )
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build()
-                        .also { analysis ->
-                            analysis.setAnalyzer(cameraExecutor) { imageProxy: ImageProxy ->
-                                frameCount++
-                                if (frameCount % 3 == 0L) {
-                                    val bitmap = imageProxy.image?.let { image ->
-                                        val buffer = image.planes[0].buffer
-                                        val bytes = ByteArray(buffer.remaining())
-                                        buffer.get(bytes)
-                                        android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                                    }
+                                    .build()
+                            )
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .build()
+                            .also { analysis ->
+                                analysis.setAnalyzer(cameraExecutor) { imageProxy: ImageProxy ->
+                                    val bitmap = helper?.imageProxyToBitmap(imageProxy)
                                     if (bitmap != null) {
                                         onFrameAvailable(bitmap)
                                     }
+                                    imageProxy.close()
                                 }
-                                imageProxy.close()
                             }
-                        }
 
-                    try {
                         cameraProvider.unbindAll()
                         cameraProvider.bindToLifecycle(
                             lifecycleOwner,
@@ -275,7 +289,7 @@ private fun RecognitionOverlay(
                     Icon(
                         imageVector = Icons.Default.Handshake,
                         contentDescription = null,
-                        tint = NeonOrange,
+                        tint = Teal,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
@@ -335,7 +349,7 @@ private fun RecognitionOverlay(
                         },
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        color = if (uiState.currentGesture.isNotEmpty()) NeonOrange
+                        color = if (uiState.currentGesture.isNotEmpty()) Cyan
                         else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
                 }
@@ -388,13 +402,13 @@ private fun RecognitionOverlay(
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(NeonOrange)
+                            .background(Cyan)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Processing...",
                         style = MaterialTheme.typography.labelMedium,
-                        color = NeonOrange
+                        color = Cyan
                     )
                 }
             }
@@ -445,10 +459,10 @@ private fun PermissionRequiredContent(onRequestPermission: () -> Unit) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Button(
+        androidx.compose.material3.Button(
             onClick = onRequestPermission,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = NeonOrange,
+            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                containerColor = Teal,
                 contentColor = Color.White
             ),
             shape = RoundedCornerShape(16.dp)
@@ -459,5 +473,3 @@ private fun PermissionRequiredContent(onRequestPermission: () -> Unit) {
         }
     }
 }
-
-

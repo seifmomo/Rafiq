@@ -46,6 +46,8 @@ class SignLanguageViewModel @Inject constructor(
         frameTimestampMs = 0L
     }
 
+    fun getHelper(): GestureRecognizerHelper? = gestureRecognizerHelper
+
     fun processFrame(bitmap: Bitmap) {
         val helper = gestureRecognizerHelper ?: return
         _uiState.update { it.copy(isProcessing = true) }

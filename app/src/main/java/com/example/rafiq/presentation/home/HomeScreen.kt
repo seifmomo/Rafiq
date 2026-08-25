@@ -6,7 +6,6 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
@@ -41,18 +40,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Gavel
-import androidx.compose.material.icons.filled.Handshake
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SignLanguage
 import androidx.compose.material.icons.filled.Sos
 import androidx.compose.material.icons.filled.Star
@@ -66,7 +61,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -75,7 +69,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -86,7 +79,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -103,11 +95,9 @@ import androidx.navigation.NavController
 import com.example.rafiq.data.local.UserPreferences
 import com.example.rafiq.presentation.navigation.Screen
 import com.example.rafiq.ui.theme.Cyan
-import com.example.rafiq.ui.theme.CyanLight
 import com.example.rafiq.ui.theme.DeepBlue
 import com.example.rafiq.ui.theme.DeepBlueLight
 import com.example.rafiq.ui.theme.ErrorRed
-import com.example.rafiq.ui.theme.OnSurface
 import com.example.rafiq.ui.theme.OnSurfaceMuted
 import com.example.rafiq.ui.theme.OnSurfaceVariant
 import com.example.rafiq.ui.theme.SuccessGreen
@@ -219,7 +209,7 @@ fun HomeScreen(
                 title = "Accessibility Tools",
                 items = listOf(
                     FeatureItem("Voice Assistant", "Speak to RAFIQ", Icons.Default.Mic, Cyan, Screen.Voice.route),
-                    FeatureItem("Sign Language", "Gesture recognition", Icons.Default.SignLanguage, Color(0xFF7C3AED), Screen.SignLanguage.route),
+                    FeatureItem("Sign Language", "Gesture recognition", Icons.Default.SignLanguage, Teal, Screen.SignLanguage.route),
                     FeatureItem("Be My Eyes", "Live helper camera", Icons.Default.Visibility, Teal, Screen.BeMyEyes.route)
                 ),
                 onNavigate = { route -> HapticFeedback.lightClick(context); navController.navigate(route) }
@@ -228,8 +218,8 @@ fun HomeScreen(
             FeatureCategory(
                 title = "Health & Medication",
                 items = listOf(
-                    FeatureItem("Medication", "Daily reminders", Icons.Default.Medication, Color(0xFFEC4899), Screen.Medication.route),
-                    FeatureItem("Contacts", "Emergency contacts", Icons.Default.People, Color(0xFF8B5CF6), Screen.Contacts.route),
+                    FeatureItem("Medication", "Daily reminders", Icons.Default.Medication, WarningAmber, Screen.Medication.route),
+                    FeatureItem("Contacts", "Emergency contacts", Icons.Default.People, Cyan, Screen.Contacts.route),
                     FeatureItem("Hospital", "Nearby care", Icons.Default.LocalHospital, ErrorRed, Screen.Hospital.route)
                 ),
                 onNavigate = { route -> HapticFeedback.lightClick(context); navController.navigate(route) }
@@ -238,7 +228,7 @@ fun HomeScreen(
             FeatureCategory(
                 title = "Navigation & Safety",
                 items = listOf(
-                    FeatureItem("Map & Places", "Explore nearby", Icons.Default.LocationOn, Color(0xFF3B82F6), Screen.Map.route),
+                    FeatureItem("Map & Places", "Explore nearby", Icons.Default.LocationOn, Cyan, Screen.Map.route),
                     FeatureItem("Safety Rights", "Know your rights", Icons.Default.Gavel, WarningAmber, Screen.Awareness.route)
                 ),
                 onNavigate = { route -> HapticFeedback.lightClick(context); navController.navigate(route) }
@@ -247,8 +237,8 @@ fun HomeScreen(
             FeatureCategory(
                 title = "Learning & Training",
                 items = listOf(
-                    FeatureItem("Learn & Exercise", "Brain training", Icons.Default.School, Color(0xFF10B981), Screen.Learning.route),
-                    FeatureItem("Companion Score", "Your progress", Icons.Default.Star, Color(0xFFFFD700), Screen.CompanionScore.route)
+                    FeatureItem("Learn & Exercise", "Brain training", Icons.Default.School, SuccessGreen, Screen.Learning.route),
+                    FeatureItem("Companion Score", "Your progress", Icons.Default.Star, WarningAmber, Screen.CompanionScore.route)
                 ),
                 onNavigate = { route -> HapticFeedback.lightClick(context); navController.navigate(route) }
             )
@@ -277,7 +267,7 @@ private fun HeroHeader(
                     colors = listOf(DeepBlue, DeepBlueLight, MaterialTheme.colorScheme.background)
                 )
             )
-            .padding(start = 24.dp, end = 24.dp, top = 48.dp, bottom = 24.dp)
+            .padding(start = 20.dp, end = 20.dp, top = 36.dp, bottom = 16.dp)
     ) {
         Column {
             Row(
@@ -287,62 +277,54 @@ private fun HeroHeader(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "RAFIQ",
-                        style = MaterialTheme.typography.headlineLarge,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 6.sp,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 4.sp,
                         color = Cyan
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.WbSunny,
                             contentDescription = null,
                             tint = WarningAmber,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(14.dp)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "$greeting, Friend",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White.copy(alpha = 0.7f)
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White.copy(alpha = 0.6f)
                         )
                     }
                 }
 
                 Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(RoundedCornerShape(16.dp))
                         .background(Color.White.copy(alpha = 0.08f))
                         .clickable(onClick = onPointsClick)
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         Icons.Default.Star,
                         contentDescription = null,
                         tint = WarningAmber,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = "$points",
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "I'm here to support you. Choose a feature below!",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.45f)
-            )
-
             if (guardianMode) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
@@ -427,7 +409,7 @@ private fun AIAssistantSection(
                     }
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Ask me anything or use voice commands",
+                        text = "Ask me anything",
                         style = MaterialTheme.typography.bodySmall,
                         color = OnSurfaceVariant
                     )
@@ -446,11 +428,11 @@ private fun AIAssistantSection(
 @Composable
 private fun QuickActionsRow(onNavigate: (String) -> Unit) {
     val actions = listOf(
-        QuickAction("Map", Icons.Default.LocationOn, Color(0xFF3B82F6), Screen.Map.route),
-        QuickAction("Voice", Icons.Default.Mic, Cyan, Screen.Voice.route),
-        QuickAction("Sign", Icons.Default.SignLanguage, Color(0xFF7C3AED), Screen.SignLanguage.route),
+        QuickAction("Map", Icons.Default.LocationOn, Cyan, Screen.Map.route),
+        QuickAction("Voice", Icons.Default.Mic, Teal, Screen.Voice.route),
+        QuickAction("Sign", Icons.Default.SignLanguage, Teal, Screen.SignLanguage.route),
         QuickAction("SOS", Icons.Default.Sos, ErrorRed, Screen.SOS.route),
-        QuickAction("Chat", Icons.AutoMirrored.Filled.Chat, Teal, Screen.Chat.route)
+        QuickAction("Chat", Icons.AutoMirrored.Filled.Chat, Cyan, Screen.Chat.route)
     )
 
     LazyRow(
@@ -527,14 +509,14 @@ private fun FeatureCategory(
         items.chunked(3).forEach { rowItems ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 rowItems.forEach { item ->
                     FeatureCard(item = item, modifier = Modifier.weight(1f), onClick = { onNavigate(item.route) })
                 }
                 repeat(3 - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
             }
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
@@ -564,7 +546,7 @@ private fun FeatureCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(14.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(

@@ -17,6 +17,7 @@ rafiq/
 - **AI Chat Assistant** — conversation UI with typing indicator, clear-history, cloud sync, Gemini integration
 - **Map & Equipped Places** — add wheelchair/sign-language/braille-equipped places (+50 pts)
 - **Voice & Sign Language** — speech-to-text assistant with accessibility avatar
+- **Sign Language Recognition** — real-time hand gesture recognition using CameraX + MediaPipe Tasks Vision (recognizes Fist, Open Palm, Pointing Up, Thumb Up/Down, Victory, ILY gestures)
 - **Companion Score** — gamified points, levels, leaderboard
 - **Contacts, Medication reminders, Hospital finder, Learning center, Awareness & rights**
 - **Be My Eyes** — simulated live volunteer camera
@@ -81,5 +82,47 @@ Password: demo1234
 
 ## Tech Stack
 
-- **App:** Kotlin, Jetpack Compose (Material 3), Hilt, Room, Retrofit/OkHttp, DataStore, Firebase (Realtime DB + Messaging), Google Play Services Location, Gemini SDK
+- **App:** Kotlin, Jetpack Compose (Material 3), Hilt, Room, Retrofit/OkHttp, DataStore, Firebase (Realtime DB + Messaging), Google Play Services Location, Gemini SDK, MediaPipe Tasks Vision, CameraX
 - **Backend:** Node.js, Express, PostgreSQL, JWT (bcryptjs + jsonwebtoken), ws, Helmet, CORS, rate limiting
+
+## Sign Language Recognition Feature
+
+The sign language recognition feature uses on-device inference via **MediaPipe Gesture Recognizer** with **CameraX** for live camera processing.
+
+### How It Works
+
+1. CameraX captures frames from the front-facing camera
+2. Every 3rd frame is passed to MediaPipe's Gesture Recognizer (runs on a background thread)
+3. MediaPipe detects hand landmarks and classifies the gesture
+4. Recognized gestures are mapped to display labels (e.g., "Open_Palm" → "Hello")
+5. The recognized text accumulates and is spoken aloud via TTS
+
+### Supported Gestures
+
+| Gesture | Label | Description |
+|---------|-------|-------------|
+| Open_Palm | Hello | Open hand facing camera |
+| Closed_Fist | Fist | Closed fist |
+| Pointing_Up | A | Index finger pointing up |
+| Thumb_Up | Yes | Thumbs up |
+| Thumb_Down | No | Thumbs down |
+| Victory | Peace | Two fingers up (V sign) |
+| ILoveYou | I Love You | Pinky + index + thumb extended |
+
+### Model Details
+
+- **Framework:** MediaPipe Tasks Vision (`com.google.mediapipe:tasks-vision:0.10.21`)
+- **Model:** `gesture_recognizer.task` (bundled inside the MediaPipe AAR, no manual download needed)
+- **Inference mode:** Live stream (async, non-blocking)
+- **Max hands:** 1
+- **Confidence threshold:** 0.7
+- **Threading:** Inference runs on a dedicated single-thread executor; UI remains responsive
+
+### File Structure
+
+```
+app/src/main/java/com/example/rafiq/presentation/signlanguage/
+├── GestureRecognizerHelper.kt   — MediaPipe setup, inference wrapper, cleanup
+├── SignLanguageViewModel.kt     — MVVM ViewModel, state management, gesture→text mapping
+└── SignLanguageScreen.kt        — CameraX preview, recognition overlay, permission handling
+```

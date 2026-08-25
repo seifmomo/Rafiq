@@ -37,7 +37,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.LocalHospital
@@ -53,7 +52,6 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -116,9 +114,6 @@ fun HomeScreen(
     val userPreferences = remember { UserPreferences(context) }
     val whatsNewVersion by userPreferences.whatsNewVersion.collectAsState(initial = 999)
     var showWhatsNew by remember { mutableStateOf(false) }
-    val disabilityType by userPreferences.disabilityType.collectAsState(initial = "")
-    val disabilityPromptShown by userPreferences.disabilityPromptShown.collectAsState(initial = false)
-    var showDisabilityDialog by remember { mutableStateOf(false) }
 
     if (Build.VERSION.SDK_INT >= 33) {
         val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -137,39 +132,18 @@ fun HomeScreen(
     }
 
     var sessionDialogShown by remember { mutableStateOf(false) }
-    LaunchedEffect(disabilityType, whatsNewVersion, disabilityPromptShown) {
-        if (!sessionDialogShown) {
-            if (whatsNewVersion < 1) { showWhatsNew = true; sessionDialogShown = true }
-            else if (disabilityType.isEmpty() && !disabilityPromptShown) { showDisabilityDialog = true; sessionDialogShown = true }
+    LaunchedEffect(whatsNewVersion) {
+        if (!sessionDialogShown && whatsNewVersion < 1) {
+            showWhatsNew = true
+            sessionDialogShown = true
         }
     }
 
     if (showWhatsNew) {
         WhatsNewDialog(onDismiss = {
             showWhatsNew = false
-            scope.launch {
-                userPreferences.setWhatsNewVersion(1)
-                if (disabilityType.isEmpty() && !disabilityPromptShown) showDisabilityDialog = true
-            }
+            scope.launch { userPreferences.setWhatsNewVersion(1) }
         })
-    }
-
-    if (showDisabilityDialog) {
-        DisabilityDialog(
-            onSelect = { option ->
-                scope.launch {
-                    userPreferences.setDisabilityType(option)
-                    userPreferences.setDisabilityPromptShown(true)
-                    userPreferences.addPoints(50)
-                }
-                viewModel.syncDisabilityType(option)
-                showDisabilityDialog = false
-            },
-            onSkip = {
-                scope.launch { userPreferences.setDisabilityPromptShown(true) }
-                showDisabilityDialog = false
-            }
-        )
     }
 
     val greeting = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
@@ -603,76 +577,6 @@ private fun EmergencySOSButton(onClick: () -> Unit) {
             )
         }
     }
-}
-
-@Composable
-private fun DisabilityDialog(
-    onSelect: (String) -> Unit,
-    onSkip: () -> Unit
-) {
-    var selected by remember { mutableStateOf("") }
-    val options = listOf(
-        "Blind / No sight", "Low vision / Partial sight", "Hearing impaired",
-        "Mobility impaired", "Cognitive / Learning difficulty", "Prefer not to say"
-    )
-
-    AlertDialog(
-        onDismissRequest = onSkip,
-        shape = RoundedCornerShape(28.dp),
-        containerColor = MaterialTheme.colorScheme.surface,
-        title = {
-            Text("Tell us about yourself", fontWeight = FontWeight.Bold)
-        },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    "What best describes your situation?",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                options.forEach { option ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { selected = option }
-                            .background(
-                                if (selected == option) Cyan.copy(alpha = 0.1f)
-                                else Color.Transparent
-                            )
-                            .padding(12.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .clip(CircleShape)
-                                .background(if (selected == option) Cyan else MaterialTheme.colorScheme.surfaceVariant),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (selected == option) {
-                                Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(option, fontWeight = if (selected == option) FontWeight.SemiBold else FontWeight.Normal)
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { onSelect(selected) },
-                enabled = selected.isNotEmpty(),
-                colors = ButtonDefaults.buttonColors(containerColor = Cyan, contentColor = Color.White),
-                shape = RoundedCornerShape(14.dp)
-            ) { Text("Continue", fontWeight = FontWeight.Bold) }
-        },
-        dismissButton = {
-            TextButton(onClick = onSkip) { Text("Skip") }
-        }
-    )
 }
 
 private data class QuickAction(

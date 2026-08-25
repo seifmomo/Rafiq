@@ -2,6 +2,7 @@ package com.example.rafiq.presentation.signlanguage
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rafiq.data.hardware.TtsManager
@@ -21,7 +22,8 @@ data class SignLanguageUiState(
     val currentGesture: String = "",
     val recognizedText: String = "",
     val handDetected: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val modelAvailable: Boolean = false
 )
 
 @HiltViewModel
@@ -36,14 +38,44 @@ class SignLanguageViewModel @Inject constructor(
     private var gestureRecognizerHelper: GestureRecognizerHelper? = null
     private var frameTimestampMs = 0L
 
+    private fun isModelAvailable(): Boolean {
+        return try {
+            context.assets.open(MODEL_FILE).use { true }
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     fun initializeRecognizer() {
-        gestureRecognizerHelper?.close()
-        gestureRecognizerHelper = GestureRecognizerHelper(
-            context = context,
-            onResult = ::onGestureRecognizerResult,
-            onError = ::onGestureRecognizerError
-        )
-        frameTimestampMs = 0L
+        if (!isModelAvailable()) {
+            _uiState.update {
+                it.copy(
+                    modelAvailable = false,
+                    errorMessage = "Gesture model not found. Add '$MODEL_FILE' to assets to enable recognition."
+                )
+            }
+            return
+        }
+
+        try {
+            gestureRecognizerHelper?.close()
+            gestureRecognizerHelper = GestureRecognizerHelper(
+                context = context,
+                onResult = ::onGestureRecognizerResult,
+                onError = ::onGestureRecognizerError
+            )
+            _uiState.update { it.copy(modelAvailable = true, errorMessage = null) }
+            frameTimestampMs = 0L
+        } catch (e: Throwable) {
+            Log.e(TAG, "Failed to initialize recognizer", e)
+            gestureRecognizerHelper = null
+            _uiState.update {
+                it.copy(
+                    modelAvailable = false,
+                    errorMessage = "Recognition unavailable: ${e.message}"
+                )
+            }
+        }
     }
 
     fun getHelper(): GestureRecognizerHelper? = gestureRecognizerHelper
@@ -125,6 +157,8 @@ class SignLanguageViewModel @Inject constructor(
     }
 
     companion object {
+        private const val TAG = "SignLanguageVM"
+        private const val MODEL_FILE = "gesture_recognizer.task"
         private const val CONFIDENCE_THRESHOLD = 0.7f
 
         private val GESTURE_LABELS = mapOf(

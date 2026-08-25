@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.graphics.Matrix
+import android.graphics.Rect
 import android.graphics.YuvImage
 import android.util.Log
 import androidx.annotation.OptIn
@@ -30,6 +31,17 @@ class GestureRecognizerHelper(
 
     private fun setupRecognizer() {
         try {
+            val assetExists = try {
+                context.assets.open(MODEL_FILE).use { true }
+            } catch (_: Exception) {
+                false
+            }
+
+            if (!assetExists) {
+                onError("Gesture model file '$MODEL_FILE' not found in assets. Recognition is disabled.")
+                return
+            }
+
             val baseOptions = BaseOptions.builder()
                 .setModelAssetPath(MODEL_FILE)
                 .build()
@@ -43,22 +55,27 @@ class GestureRecognizerHelper(
                 .build()
 
             gestureRecognizer = GestureRecognizer.createFromOptions(context, options)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Log.e(TAG, "Failed to create gesture recognizer", e)
             gestureRecognizer = null
-            onError("Gesture model not available. Please ensure the model file is included in assets.")
+            onError("Could not start gesture recognition: ${e.message}")
         }
     }
 
     @OptIn(ExperimentalGetImage::class)
     fun imageProxyToBitmap(imageProxy: ImageProxy): Bitmap? {
         val image = imageProxy.image ?: return null
-        val nv21 = yuv420888ToNv21(image)
-        val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
-        val out = ByteArrayOutputStream()
-        yuvImage.compressToJpeg(android.graphics.Rect(0, 0, image.width, image.height), 80, out)
-        val bytes = out.toByteArray()
-        return android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        return try {
+            val nv21 = yuv420888ToNv21(image)
+            val yuvImage = YuvImage(nv21, ImageFormat.NV21, image.width, image.height, null)
+            val out = ByteArrayOutputStream()
+            yuvImage.compressToJpeg(Rect(0, 0, image.width, image.height), 80, out)
+            val bytes = out.toByteArray()
+            android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to convert ImageProxy to Bitmap", e)
+            null
+        }
     }
 
     private fun yuv420888ToNv21(image: android.media.Image): ByteArray {
@@ -87,7 +104,7 @@ class GestureRecognizerHelper(
         try {
             val mpImage = BitmapImageBuilder(rotatedBitmap).build()
             recognizer.recognizeAsync(mpImage, timestampMs)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Log.e(TAG, "Recognition error", e)
         }
     }

@@ -32,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Handshake
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -44,7 +45,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -64,8 +64,10 @@ import androidx.navigation.NavController
 import com.example.rafiq.ui.components.RafiqTopBar
 import com.example.rafiq.ui.theme.Cyan
 import com.example.rafiq.ui.theme.ErrorRed
+import com.example.rafiq.ui.theme.OnSurfaceVariant
 import com.example.rafiq.ui.theme.SuccessGreen
 import com.example.rafiq.ui.theme.Teal
+import com.example.rafiq.ui.theme.WarningAmber
 import java.util.concurrent.Executors
 
 @Composable
@@ -101,43 +103,6 @@ fun SignLanguageScreen(
         }
     }
 
-    uiState.errorMessage?.let { error ->
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = ErrorRed.copy(alpha = 0.1f))
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Default.CameraAlt,
-                    contentDescription = null,
-                    tint = ErrorRed,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Model Not Available",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = ErrorRed
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "The gesture recognition model file is missing. Camera preview is still available.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-    }
-
     Scaffold(
         topBar = {
             RafiqTopBar(
@@ -163,6 +128,12 @@ fun SignLanguageScreen(
                     }
                 )
 
+                if (!uiState.modelAvailable) {
+                    uiState.errorMessage?.let { error ->
+                        ModelMissingBanner(message = error)
+                    }
+                }
+
                 RecognitionOverlay(
                     uiState = uiState,
                     onClearText = { viewModel.clearText() }
@@ -172,6 +143,35 @@ fun SignLanguageScreen(
                     onRequestPermission = { permissionLauncher.launch(Manifest.permission.CAMERA) }
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ModelMissingBanner(message: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = WarningAmber.copy(alpha = 0.1f))
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.Info,
+                contentDescription = null,
+                tint = WarningAmber,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = OnSurfaceVariant
+            )
         }
     }
 }
@@ -219,9 +219,11 @@ private fun CameraPreview(
                             .build()
                             .also { analysis ->
                                 analysis.setAnalyzer(cameraExecutor) { imageProxy: ImageProxy ->
-                                    val bitmap = helper?.imageProxyToBitmap(imageProxy)
-                                    if (bitmap != null) {
-                                        onFrameAvailable(bitmap)
+                                    if (helper != null && helper.isInitialized) {
+                                        val bitmap = helper.imageProxyToBitmap(imageProxy)
+                                        if (bitmap != null) {
+                                            onFrameAvailable(bitmap)
+                                        }
                                     }
                                     imageProxy.close()
                                 }
@@ -345,7 +347,9 @@ private fun RecognitionOverlay(
 
                     Text(
                         text = uiState.currentGesture.ifEmpty {
-                            if (uiState.handDetected) "Analyzing..." else "No gesture detected"
+                            if (!uiState.modelAvailable) "Model not loaded"
+                            else if (uiState.handDetected) "Analyzing..."
+                            else "No gesture detected"
                         },
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,

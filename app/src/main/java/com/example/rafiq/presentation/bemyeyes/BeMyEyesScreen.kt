@@ -37,6 +37,7 @@ fun BeMyEyesScreen(
     val isConnected by viewModel.isConnected.collectAsState()
     val isMuted by viewModel.isMuted.collectAsState()
     val isVideoOn by viewModel.isVideoOn.collectAsState()
+    val isDemo by viewModel.isDemo.collectAsState()
 
     Scaffold(
         topBar = {
@@ -91,6 +92,20 @@ fun BeMyEyesScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(top = 40.dp)
                 ) {
+                    if (isDemo) {
+                        Text(
+                            text = "SIMULATION DEMO",
+                            color = Color.Black,
+                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(Color(0xFFFFD54F))
+                                .padding(horizontal = 14.dp, vertical = 6.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
                     Text(
                         text = when {
                             isCalling -> "Calling a Volunteer..."

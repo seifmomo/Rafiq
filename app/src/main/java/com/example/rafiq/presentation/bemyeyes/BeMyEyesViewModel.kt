@@ -26,6 +26,9 @@ class BeMyEyesViewModel @Inject constructor() : ViewModel() {
     private val _isVideoOn = MutableStateFlow(true)
     val isVideoOn: StateFlow<Boolean> = _isVideoOn.asStateFlow()
 
+    private val _isDemo = MutableStateFlow(true)
+    val isDemo: StateFlow<Boolean> = _isDemo.asStateFlow()
+
     private var connectionJob: Job? = null
 
     init {

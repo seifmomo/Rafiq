@@ -119,7 +119,7 @@ On-device inference via **MediaPipe Gesture Recognizer** with **CameraX** for li
 ### Model Details
 
 - **Framework:** MediaPipe Tasks Vision (`com.google.mediapipe:tasks-vision:0.10.21`)
-- **Model:** `gesture_recognizer.task` (bundled inside the MediaPipe AAR)
+- **Model:** `gesture_recognizer.task` bundled in `app/src/main/assets/` (download from `https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task`). This is a bundled model containing `hand_landmarker.task` + `hand_gesture_recognizer.task`, loaded at runtime via `BaseOptions.setModelAssetPath`.
 - **Fallback:** If the model file is missing, the app shows camera preview with a warning banner instead of crashing
 - **Inference mode:** Live stream (async, non-blocking)
 - **Max hands:** 1

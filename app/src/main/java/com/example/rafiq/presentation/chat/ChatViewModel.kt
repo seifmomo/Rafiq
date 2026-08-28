@@ -42,6 +42,8 @@ class ChatViewModel @Inject constructor(
             val msgId = UUID.randomUUID().toString()
             val timestamp = System.currentTimeMillis()
 
+            val history = chatMessageDao.getAllMessagesOnce()
+
             val userMessage = ChatMessage(
                 id = msgId,
                 message = text,
@@ -60,7 +62,7 @@ class ChatViewModel @Inject constructor(
             userPreferences.addPoints(10)
 
             _isTyping.value = true
-            val aiResponse = geminiManager.generateResponse(text)
+            val aiResponse = geminiManager.generateResponseWithHistory(text, history)
             _isTyping.value = false
 
             val replyId = UUID.randomUUID().toString()

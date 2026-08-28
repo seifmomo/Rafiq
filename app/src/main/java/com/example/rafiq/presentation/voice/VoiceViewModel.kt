@@ -9,14 +9,19 @@ import android.speech.SpeechRecognizer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rafiq.data.hardware.TtsManager
+import com.example.rafiq.data.local.ChatMessage
+import com.example.rafiq.data.local.ChatMessageDao
 import com.example.rafiq.data.local.UserPreferences
 import com.example.rafiq.data.remote.GeminiManager
+import com.example.rafiq.data.remote.api.ChatApi
+import com.example.rafiq.data.remote.dto.CreateMessageRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,7 +29,9 @@ class VoiceViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val ttsManager: TtsManager,
     private val geminiManager: GeminiManager,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    private val chatMessageDao: ChatMessageDao,
+    private val chatApi: ChatApi
 ) : ViewModel() {
 
     private val _spokenText = MutableStateFlow("Tap the mic to start speaking...")
@@ -73,11 +80,12 @@ class VoiceViewModel @Inject constructor(
             if (!matches.isNullOrEmpty()) {
                 val spoken = matches[0].lowercase()
                 _spokenText.value = spoken
-                
+
                 viewModelScope.launch {
                     val aiResponse = geminiManager.processVoiceCommand(spoken)
                     ttsManager.speak(aiResponse)
                     userPreferences.addPoints(15)
+                    persistConversation(spoken, aiResponse)
                 }
             }
         }
@@ -131,6 +139,30 @@ class VoiceViewModel @Inject constructor(
             speechRecognizer?.destroy()
             speechRecognizer = null
         }
+    }
+
+    private suspend fun persistConversation(spoken: String, reply: String) {
+        val timestamp = System.currentTimeMillis()
+
+        val userMsg = ChatMessage(
+            id = UUID.randomUUID().toString(),
+            message = spoken,
+            timestamp = timestamp,
+            sender = "user"
+        )
+        val aiMsg = ChatMessage(
+            id = UUID.randomUUID().toString(),
+            message = reply,
+            timestamp = timestamp + 1,
+            sender = "rafiq"
+        )
+        chatMessageDao.insertMessage(userMsg)
+        chatMessageDao.insertMessage(aiMsg)
+
+        try {
+            chatApi.sendMessage(CreateMessageRequest(userMsg.id, spoken, "user", timestamp))
+            chatApi.sendMessage(CreateMessageRequest(aiMsg.id, reply, "rafiq", timestamp + 1))
+        } catch (_: Exception) {}
     }
 
     private fun stopListening() {

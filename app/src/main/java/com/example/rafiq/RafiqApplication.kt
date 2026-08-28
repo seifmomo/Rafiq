@@ -20,4 +20,13 @@ class RafiqApplication : Application() {
             super.attachBaseContext(base)
         }
     }
+
+    override fun onCreate() {
+        super.onCreate()
+        org.osmdroid.config.Configuration.getInstance().apply {
+            userAgentValue = packageName
+            osmdroidBasePath = org.osmdroid.config.Configuration.getInstance().osmdroidBasePath
+            osmdroidTileCache = java.io.File(cacheDir, "osmdroid")
+        }
+    }
 }

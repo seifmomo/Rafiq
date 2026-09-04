@@ -180,9 +180,12 @@ class GeminiManager @Inject constructor() {
         }
     }
 
-    private fun localFallback(input: String): String {
-        val text = input.lowercase().trim()
-        return when {
+    private fun localFallback(input: String): String = accessibilityFallbackReply(input)
+}
+
+internal fun accessibilityFallbackReply(input: String): String {
+    val text = input.lowercase().trim()
+    return when {
             text.contains("sos") || (text.contains("help") && (text.contains("call") || text.contains("emergency") || text.contains("danger"))) ->
                 "In an emergency, tap the red SOS button on the home screen. It immediately alerts your emergency contact and shares your live location."
 
@@ -198,8 +201,8 @@ class GeminiManager @Inject constructor() {
             text.contains("eye") || text.contains("see") || text.contains("read") || text.contains("blind") || text.contains("vision") || text.contains("look") ->
                 "Use the Be My Eyes feature to point your camera at objects, signs, or text. RAFIQ will read and describe what's in front of you."
 
-            text.contains("glass") || text.contains("bluetooth") || text.contains("hardware") || text.contains("device") ->
-                "Smart glasses and external accessibility devices can be paired in Settings under Hardware. Once connected, they read signs aloud."
+            text.contains("glass") || text.contains("bluetooth") || text.contains("hardware") || text.contains("device") || text.contains("headset") ->
+                "Smart glasses and accessibility headsets can read text and signs aloud when connected to your device. Check your device's Bluetooth settings to pair compatible hardware with the app."
 
             text.contains("who are you") || text.contains("what can you do") || text.contains("your name") || text.contains("rafiq") ->
                 "I am RAFIQ, your dedicated AI accessibility assistant! I help with sign language detection, medication reminders, accessible location mapping, and emergency SOS."
@@ -214,4 +217,3 @@ class GeminiManager @Inject constructor() {
                 "I am RAFIQ, your accessibility assistant. I can help with medication reminders, finding accessible places, emergency SOS, and sign language recognition. How can I support you right now?"
         }
     }
-}

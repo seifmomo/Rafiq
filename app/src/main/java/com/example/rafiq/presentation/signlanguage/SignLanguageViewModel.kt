@@ -3,6 +3,7 @@ package com.example.rafiq.presentation.signlanguage
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.camera.core.ImageProxy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rafiq.data.hardware.TtsManager
@@ -65,7 +66,7 @@ class SignLanguageViewModel @Inject constructor(
                 onError = ::onGestureRecognizerError
             )
             _uiState.update { it.copy(modelAvailable = true, errorMessage = null) }
-            frameTimestampMs = 0L
+            frameTimestampMs = System.currentTimeMillis()
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to initialize recognizer", e)
             gestureRecognizerHelper = null
@@ -80,11 +81,25 @@ class SignLanguageViewModel @Inject constructor(
 
     fun getHelper(): GestureRecognizerHelper? = gestureRecognizerHelper
 
+    fun processImageProxy(imageProxy: ImageProxy) {
+        val helper = gestureRecognizerHelper
+        if (helper != null && helper.isInitialized) {
+            val bitmap = helper.imageProxyToBitmap(imageProxy)
+            if (bitmap != null) {
+                _uiState.update { it.copy(isProcessing = true) }
+                val rotationDegrees = imageProxy.imageInfo.rotationDegrees
+                val timestamp = System.currentTimeMillis()
+                helper.recognizeAsync(bitmap, rotationDegrees, timestamp)
+            }
+        }
+        imageProxy.close()
+    }
+
     fun processFrame(bitmap: Bitmap) {
         val helper = gestureRecognizerHelper ?: return
         _uiState.update { it.copy(isProcessing = true) }
-        helper.recognizeAsync(bitmap, frameTimestampMs)
-        frameTimestampMs += 16L
+        val timestamp = System.currentTimeMillis()
+        helper.recognizeAsync(bitmap, 90, timestamp)
     }
 
     private fun onGestureRecognizerResult(result: GestureRecognizerResult) {
@@ -109,18 +124,24 @@ class SignLanguageViewModel @Inject constructor(
 
             if (confidence > CONFIDENCE_THRESHOLD) {
                 val displayText = GESTURE_LABELS[gestureName] ?: gestureName
-                val isDifferent = displayText != _uiState.value.currentGesture
+                val currentGesture = _uiState.value.currentGesture
+                val isDifferent = displayText != currentGesture
 
-                _uiState.update {
-                    it.copy(
+                _uiState.update { state ->
+                    val newRecognizedText = if (isDifferent && displayText.isNotBlank()) {
+                        if (state.recognizedText.isBlank()) displayText else "${state.recognizedText} $displayText"
+                    } else {
+                        state.recognizedText
+                    }
+                    state.copy(
                         isProcessing = false,
                         currentGesture = displayText,
                         handDetected = true,
-                        recognizedText = it.recognizedText + if (isDifferent) displayText else ""
+                        recognizedText = newRecognizedText
                     )
                 }
 
-                if (isDifferent && displayText.isNotEmpty()) {
+                if (isDifferent && displayText.isNotBlank()) {
                     ttsManager.speak(displayText)
                 }
             } else {

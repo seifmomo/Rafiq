@@ -122,9 +122,8 @@ fun SignLanguageScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
-                    helper = viewModel.getHelper(),
-                    onFrameAvailable = { bitmap ->
-                        viewModel.processFrame(bitmap)
+                    onFrameAvailable = { imageProxy ->
+                        viewModel.processImageProxy(imageProxy)
                     }
                 )
 
@@ -179,8 +178,7 @@ private fun ModelMissingBanner(message: String) {
 @Composable
 private fun CameraPreview(
     modifier: Modifier = Modifier,
-    helper: GestureRecognizerHelper?,
-    onFrameAvailable: (android.graphics.Bitmap) -> Unit
+    onFrameAvailable: (ImageProxy) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -219,13 +217,7 @@ private fun CameraPreview(
                             .build()
                             .also { analysis ->
                                 analysis.setAnalyzer(cameraExecutor) { imageProxy: ImageProxy ->
-                                    if (helper != null && helper.isInitialized) {
-                                        val bitmap = helper.imageProxyToBitmap(imageProxy)
-                                        if (bitmap != null) {
-                                            onFrameAvailable(bitmap)
-                                        }
-                                    }
-                                    imageProxy.close()
+                                    onFrameAvailable(imageProxy)
                                 }
                             }
 

@@ -10,6 +10,21 @@ android {
     namespace = "com.example.rafiq"
     compileSdk = 35
 
+    val geminiApiKey: String = run {
+        val secretsFile: java.io.File = rootProject.file("gradle-secrets.properties")
+        var value: String? = null
+        if (secretsFile.exists()) {
+            value = secretsFile.readLines()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("GEMINI_API_KEY=") }
+                ?.substringAfter("GEMINI_API_KEY=")
+                ?.trim()
+        }
+        value
+            ?: (project.findProperty("GEMINI_API_KEY") as? String)
+            ?: "YOUR_API_KEY_HERE"
+    }
+
     defaultConfig {
         applicationId = "com.example.rafiq"
         minSdk = 24
@@ -19,16 +34,16 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "GEMINI_API_KEY", "\"${project.findProperty("GEMINI_API_KEY") ?: "YOUR_API_KEY_HERE"}\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            buildConfigField("String", "GEMINI_API_KEY", "\"${project.findProperty("GEMINI_API_KEY") ?: "YOUR_API_KEY_HERE"}\"")
+            buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
         }
         debug {
-            buildConfigField("String", "GEMINI_API_KEY", "\"${project.findProperty("GEMINI_API_KEY") ?: "YOUR_API_KEY_HERE"}\"")
+            buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
         }
     }
     compileOptions {

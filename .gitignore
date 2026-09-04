@@ -14,3 +14,9 @@ app/.idea
 .cxx
 local.properties
 mediapipe-master/
+/keystore.properties
+/app/keystore.properties
+/app/google-services.json
+# Local-only secrets (API keys live here, never committed)
+/gradle-secrets.properties
+/gradle.properties.local

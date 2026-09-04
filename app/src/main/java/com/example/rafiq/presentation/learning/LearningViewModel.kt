@@ -33,58 +33,58 @@ class LearningViewModel @Inject constructor() : ViewModel() {
                 id = "sl_1",
                 title = "ASL Alphabet & Numbers",
                 description = "Learn the American Sign Language alphabet and numbers from A-Z",
-                url = "https://www.youtube.com/watch?v=tk3i2YEFTqM",
+                url = "https://www.youtube.com/watch?v=DBQINq0SsAw",
                 category = LearningResource.Category.SIGN_LANGUAGE
             ),
             LearningResource(
                 id = "sl_2",
                 title = "Basic ASL Greetings & Phrases",
                 description = "Essential sign language phrases for everyday communication",
-                url = "https://www.youtube.com/watch?v=UMR3FJvWDJk",
+                url = "https://www.youtube.com/watch?v=0FcwzMq4iWg",
                 category = LearningResource.Category.SIGN_LANGUAGE
             ),
             LearningResource(
                 id = "sl_3",
                 title = "ASL Emergency Signs",
                 description = "Important signs for emergencies - help, doctor, hospital, and more",
-                url = "https://www.youtube.com/watch?v=sTzL7F62iPc",
+                url = "https://www.youtube.com/watch?v=zht0ia5Vq1U",
                 category = LearningResource.Category.SIGN_LANGUAGE
             ),
             LearningResource(
                 id = "sl_4",
                 title = "ASL for Beginners - Full Course",
                 description = "Complete beginner-friendly introduction to sign language",
-                url = "https://www.youtube.com/watch?v=G0H4iRja53A",
+                url = "https://www.youtube.com/watch?v=6w1ZDaE-whc",
                 category = LearningResource.Category.SIGN_LANGUAGE
             ),
 
             // Physical Exercises - Accessible workouts
             LearningResource(
                 id = "ex_1",
-                title = "Chair Yoga for Seniors & Disabilities",
+                title = "Chair Yoga for Seniors & Mobility",
                 description = "Gentle seated yoga stretches for flexibility and relaxation",
-                url = "https://www.youtube.com/watch?v=lCZxtN2OBL4",
+                url = "https://www.youtube.com/watch?v=8hp74BdYrNM",
                 category = LearningResource.Category.PHYSICAL_EXERCISES
             ),
             LearningResource(
                 id = "ex_2",
                 title = "Wheelchair Upper Body Workout",
                 description = "Strengthen your arms, shoulders, and core while seated",
-                url = "https://www.youtube.com/watch?v=KpMQGG8iQvY",
+                url = "https://www.youtube.com/watch?v=qDndfnLMB5Q",
                 category = LearningResource.Category.PHYSICAL_EXERCISES
             ),
             LearningResource(
                 id = "ex_3",
                 title = "Seated Breathing & Meditation",
                 description = "Deep breathing exercises and guided relaxation in seated position",
-                url = "https://www.youtube.com/watch?v=J4vWb4tPBQs",
+                url = "https://www.youtube.com/watch?v=IumIKwyx8pg",
                 category = LearningResource.Category.PHYSICAL_EXERCISES
             ),
             LearningResource(
                 id = "ex_4",
-                title = "Gentle Stretching for Mobility",
+                title = "Gentle Low-Impact Mobility Workout",
                 description = "Safe, low-impact stretches to improve flexibility and blood flow",
-                url = "https://www.youtube.com/watch?v=SI6vS2QwP5E",
+                url = "https://www.youtube.com/watch?v=gC_L9qAHVJ8",
                 category = LearningResource.Category.PHYSICAL_EXERCISES
             )
         )

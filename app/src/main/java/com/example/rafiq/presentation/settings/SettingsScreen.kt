@@ -67,7 +67,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.rafiq.presentation.hardware.HardwareViewModel
 import com.example.rafiq.presentation.navigation.Screen
 import com.example.rafiq.ui.components.RafiqTopBar
 import com.example.rafiq.util.HapticFeedback
@@ -79,10 +78,6 @@ fun SettingsScreen(
     navController: NavController,
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val hardwareViewModel: HardwareViewModel = hiltViewModel()
-    val isConnected by hardwareViewModel.isConnected.collectAsState()
-    val distanceCm by hardwareViewModel.distanceCm.collectAsState()
-    val isScanning by hardwareViewModel.isScanning.collectAsState()
     val emergencyContact by settingsViewModel.emergencyContact.collectAsState()
     val darkTheme by settingsViewModel.darkTheme.collectAsState()
     val currentLanguage by settingsViewModel.language.collectAsState()
@@ -129,17 +124,6 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Text("Smart Glasses", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            GlassesConnectionCard(
-                isConnected = isConnected,
-                isScanning = isScanning,
-                distanceCm = distanceCm,
-                onConnect = { hardwareViewModel.startScanningAndConnect() },
-                onDisconnect = { hardwareViewModel.disconnect() }
-            )
-
-            HorizontalDivider()
-
             Text("Emergency Contact", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -483,89 +467,4 @@ fun SettingsScreen(
     }
 }
 
-@Composable
-private fun GlassesConnectionCard(
-    isConnected: Boolean,
-    isScanning: Boolean,
-    distanceCm: Int,
-    onConnect: () -> Unit,
-    onDisconnect: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(CircleShape)
-                    .background(if (isConnected) MaterialTheme.colorScheme.primary else Color.Gray),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Bluetooth,
-                    contentDescription = if (isConnected) "Connected" else "Disconnected",
-                    tint = Color.White,
-                    modifier = Modifier.size(48.dp)
-                )
-            }
 
-            Text(
-                text = if (isConnected) "Connected to RAFIQ Glasses" else "Disconnected",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = if (isConnected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
-            )
-
-            if (!isConnected) {
-                Button(
-                    onClick = onConnect,
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                    enabled = !isScanning
-                ) {
-                    Text(if (isScanning) "Scanning..." else "Connect Glasses")
-                }
-            } else {
-                Button(
-                    onClick = onDisconnect,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                    modifier = Modifier.fillMaxWidth().height(48.dp)
-                ) {
-                    Text("Disconnect")
-                }
-
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (distanceCm < 100) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.surface
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(12.dp).fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("Live Sensor Distance", style = MaterialTheme.typography.labelLarge)
-                        Text(
-                            text = "$distanceCm cm",
-                            style = MaterialTheme.typography.headlineLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = if (distanceCm < 100) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
-                        )
-                        if (distanceCm < 100) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Warning, contentDescription = "Warning", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Obstacle Detected!", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}

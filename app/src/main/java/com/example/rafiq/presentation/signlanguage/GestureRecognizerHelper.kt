@@ -95,11 +95,15 @@ class GestureRecognizerHelper(
         return nv21
     }
 
-    fun recognizeAsync(bitmap: Bitmap, timestampMs: Long) {
+    fun recognizeAsync(bitmap: Bitmap, rotationDegrees: Int, timestampMs: Long) {
         val recognizer = gestureRecognizer ?: return
 
-        val matrix = Matrix().apply { postRotate(90f) }
-        val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        val rotatedBitmap = if (rotationDegrees != 0) {
+            val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        } else {
+            bitmap
+        }
 
         try {
             val mpImage = BitmapImageBuilder(rotatedBitmap).build()

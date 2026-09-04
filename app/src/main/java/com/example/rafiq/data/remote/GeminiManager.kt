@@ -4,9 +4,15 @@ import com.example.rafiq.BuildConfig
 import com.example.rafiq.data.local.ChatMessage
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.content
-import com.google.ai.client.generativeai.type.generationConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,11 +20,25 @@ import javax.inject.Singleton
 class GeminiManager @Inject constructor() {
 
     private val apiKeyValid: Boolean
-        get() = BuildConfig.GEMINI_API_KEY.isNotBlank() && BuildConfig.GEMINI_API_KEY != "YOUR_API_KEY_HERE"
+        get() = BuildConfig.GEMINI_API_KEY.isNotBlank() &&
+                BuildConfig.GEMINI_API_KEY != "YOUR_API_KEY_HERE"
+
+    private val isGeminiKey: Boolean
+        get() = BuildConfig.GEMINI_API_KEY.startsWith("AIza")
+
+    private val isOpenAiKey: Boolean
+        get() = BuildConfig.GEMINI_API_KEY.startsWith("sk-")
+
+    private val okHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .build()
+    }
 
     private val generativeModel by lazy {
         GenerativeModel(
-            modelName = "gemini-2.0-flash",
+            modelName = "gemini-1.5-flash",
             apiKey = BuildConfig.GEMINI_API_KEY,
             systemInstruction = content {
                 text(
@@ -41,12 +61,18 @@ class GeminiManager @Inject constructor() {
 
     suspend fun generateResponse(prompt: String): String = withContext(Dispatchers.IO) {
         if (!apiKeyValid) return@withContext localFallback(prompt)
+
+        if (isOpenAiKey) {
+            val openAiReply = queryOpenAiCompatible(prompt, emptyList())
+            if (openAiReply != null) return@withContext openAiReply
+        }
+
         try {
             val response = chatSession.sendMessage(prompt)
-            response.text?.trim()?.ifBlank { "I'm sorry, I couldn't process that." }
-                ?: "I'm sorry, I couldn't process that."
-        } catch (e: Exception) {
-            "Error: ${e.localizedMessage ?: "Unknown AI error"}"
+            response.text?.trim()?.ifBlank { localFallback(prompt) }
+                ?: localFallback(prompt)
+        } catch (_: Exception) {
+            localFallback(prompt)
         }
     }
 
@@ -55,6 +81,12 @@ class GeminiManager @Inject constructor() {
         history: List<ChatMessage>
     ): String = withContext(Dispatchers.IO) {
         if (!apiKeyValid) return@withContext localFallback(prompt)
+
+        if (isOpenAiKey) {
+            val openAiReply = queryOpenAiCompatible(prompt, history)
+            if (openAiReply != null) return@withContext openAiReply
+        }
+
         try {
             val session = generativeModel.startChat(
                 history = history
@@ -69,15 +101,21 @@ class GeminiManager @Inject constructor() {
                     }
             )
             val response = session.sendMessage(prompt)
-            response.text?.trim()?.ifBlank { "I'm sorry, I couldn't process that." }
-                ?: "I'm sorry, I couldn't process that."
-        } catch (e: Exception) {
-            "Error: ${e.localizedMessage ?: "Unknown AI error"}"
+            response.text?.trim()?.ifBlank { localFallback(prompt) }
+                ?: localFallback(prompt)
+        } catch (_: Exception) {
+            localFallback(prompt)
         }
     }
 
     suspend fun processVoiceCommand(command: String): String = withContext(Dispatchers.IO) {
         if (!apiKeyValid) return@withContext localFallback(command)
+
+        if (isOpenAiKey) {
+            val openAiReply = queryOpenAiCompatible(command, emptyList())
+            if (openAiReply != null) return@withContext openAiReply
+        }
+
         try {
             val prompt = """
                 The user just said: "$command".
@@ -85,34 +123,95 @@ class GeminiManager @Inject constructor() {
                 action confirmation. If it is a general question, answer helpfully and briefly. Keep it under 3 sentences.
             """.trimIndent()
             val response = generativeModel.generateContent(prompt)
-            response.text?.trim()?.ifBlank { "I heard you, but I'm not sure how to help with that yet." }
-                ?: "I heard you, but I'm not sure how to help with that yet."
-        } catch (e: Exception) {
-            "Error: ${e.localizedMessage ?: "Unknown AI error"}"
+            response.text?.trim()?.ifBlank { localFallback(command) }
+                ?: localFallback(command)
+        } catch (_: Exception) {
+            localFallback(command)
+        }
+    }
+
+    private fun queryOpenAiCompatible(prompt: String, history: List<ChatMessage>): String? {
+        return try {
+            val messagesArray = JSONArray()
+
+            val systemMsg = JSONObject()
+            systemMsg.put("role", "system")
+            systemMsg.put("content", "You are RAFIQ, a warm AI accessibility assistant for people with disabilities. Keep answers clear, empathetic, and concise.")
+            messagesArray.put(systemMsg)
+
+            history.sortedBy { it.timestamp }.takeLast(10).forEach { msg ->
+                val role = if (msg.sender.lowercase() == "user") "user" else "assistant"
+                val jsonMsg = JSONObject()
+                jsonMsg.put("role", role)
+                jsonMsg.put("content", msg.message)
+                messagesArray.put(jsonMsg)
+            }
+
+            val userMsg = JSONObject()
+            userMsg.put("role", "user")
+            userMsg.put("content", prompt)
+            messagesArray.put(userMsg)
+
+            val jsonBody = JSONObject()
+            jsonBody.put("model", "gpt-3.5-turbo")
+            jsonBody.put("messages", messagesArray)
+            jsonBody.put("max_tokens", 250)
+
+            val request = Request.Builder()
+                .url("https://api.openai.com/v1/chat/completions")
+                .addHeader("Authorization", "Bearer ${BuildConfig.GEMINI_API_KEY}")
+                .addHeader("Content-Type", "application/json")
+                .post(jsonBody.toString().toRequestBody("application/json".toMediaType()))
+                .build()
+
+            val response = okHttpClient.newCall(request).execute()
+            if (response.isSuccessful) {
+                val bodyStr = response.body?.string() ?: return null
+                val resObj = JSONObject(bodyStr)
+                val choices = resObj.optJSONArray("choices")
+                if (choices != null && choices.length() > 0) {
+                    val message = choices.getJSONObject(0).optJSONObject("message")
+                    return message?.optString("content")?.trim()
+                }
+            }
+            null
+        } catch (_: Exception) {
+            null
         }
     }
 
     private fun localFallback(input: String): String {
-        val text = input.lowercase()
+        val text = input.lowercase().trim()
         return when {
-            text.contains("sos") || text.contains("help") && (text.contains("call") || text.contains("emergency")) ->
-                "In an emergency, use the SOS button in the app, which calls your emergency contact and shares your location."
-            text.contains("hospital") || text.contains("clinic") || text.contains("doctor") ->
-                "Use the Map tab to find accessible hospitals and clinics near you. I can help you get directions there."
-            text.contains("medic") || text.contains("pill") || text.contains("dose") ->
-                "Open the Health tab to manage medications and alarms. Tell me the medicine name and time and I'll confirm it."
-            text.contains("sign") || text.contains("gesture") ->
-                "Open the Sign Language tab and show a gesture to the camera. I understand common gestures like thumbs up and the victory sign."
-            text.contains("glasses") || text.contains("glass") ->
-                "Connected smart glasses help read signs and surroundings aloud. Make sure they are paired in Settings."
-            text.contains("who are you") ->
-                "I'm RAFIQ, your accessibility assistant. Ask me about medications, places, or safety, or use the voice command."
+            text.contains("sos") || (text.contains("help") && (text.contains("call") || text.contains("emergency") || text.contains("danger"))) ->
+                "In an emergency, tap the red SOS button on the home screen. It immediately alerts your emergency contact and shares your live location."
+
+            text.contains("hospital") || text.contains("clinic") || text.contains("doctor") || text.contains("pharmacy") || text.contains("health center") ->
+                "You can view accessible hospitals and clinics near you on the Map screen. Tap on any hospital marker for direct navigation."
+
+            text.contains("medic") || text.contains("pill") || text.contains("dose") || text.contains("remind") ->
+                "Manage your daily medications in the Health tab. You can set pill names, dosages, and custom alarm times so you never miss a dose."
+
+            text.contains("sign") || text.contains("gesture") || text.contains("deaf") || text.contains("asl") || text.contains("hand") ->
+                "Open the Sign Language tab and point your camera at your hand! RAFIQ detects gestures like Thumbs Up, Victory, Fist, and Open Palm in real time."
+
+            text.contains("eye") || text.contains("see") || text.contains("read") || text.contains("blind") || text.contains("vision") || text.contains("look") ->
+                "Use the Be My Eyes feature to point your camera at objects, signs, or text. RAFIQ will read and describe what's in front of you."
+
+            text.contains("glass") || text.contains("bluetooth") || text.contains("hardware") || text.contains("device") ->
+                "Smart glasses and external accessibility devices can be paired in Settings under Hardware. Once connected, they read signs aloud."
+
+            text.contains("who are you") || text.contains("what can you do") || text.contains("your name") || text.contains("rafiq") ->
+                "I am RAFIQ, your dedicated AI accessibility assistant! I help with sign language detection, medication reminders, accessible location mapping, and emergency SOS."
+
+            text.contains("hello") || text.contains("hi") || text == "hey" || text.startsWith("good morning") || text.startsWith("good evening") ->
+                "Hello! Welcome to RAFIQ. How can I help you today?"
+
             text.contains("thank") ->
-                "You're very welcome! I'm here whenever you need me."
-            text.contains("hello") || text.contains("hi ") || text.trim() == "hi" || text == "hey" ->
-                "Hello! How can I help you today?"
+                "You're very welcome! I'm always here to assist you."
+
             else ->
-                "I'm ready to help, but my AI service isn't configured yet. Set a Gemini API key in gradle.properties to enable full responses. Meanwhile, try asking about medications, hospitals, or SOS."
+                "I am RAFIQ, your accessibility assistant. I can help with medication reminders, finding accessible places, emergency SOS, and sign language recognition. How can I support you right now?"
         }
     }
 }

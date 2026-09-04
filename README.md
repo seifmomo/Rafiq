@@ -13,17 +13,17 @@ rafiq/
 
 ## Features
 
-- **Emergency SOS** — 10s countdown, SMS + Firebase alert to emergency contact, guardian mode, fall-detection simulation with vibration/TTS
-- **AI Chat Assistant** — conversation UI with typing indicator, clear-history, cloud sync, Gemini integration
-- **Map & Equipped Places** — add wheelchair/sign-language/braille-equipped places (+50 pts)
-- **Voice Assistant** — speech-to-text with accessibility avatar
-- **Sign Language Recognition** — real-time hand gesture recognition using CameraX + MediaPipe Tasks Vision (recognizes Fist, Open Palm, Pointing Up, Thumb Up/Down, Victory, ILY gestures)
+- **Emergency SOS** — 10s countdown, SMS + Firebase alert to emergency contact, guardian mode
+- **AI Chat Assistant** — conversation UI with memory, clear-history, cloud sync, and AI replies via **Gemini (AIza…)** or **OpenAI-compatible (sk-…)** keys, with an always-on local accessibility fallback (SOS, hospitals, medications, sign language, Be My Eyes, glasses, companion)
+- **Real Map & Equipped Places** — real **OpenStreetMap** (osmdroid) of Cairo with markers for wheelchair/sign-language/braille-equipped places (+50 pts); add new places from GPS
+- **Voice Assistant** — speech-to-text with accessibility avatar; responses read aloud via TTS and saved to chat history
+- **Sign Language Recognition** — real-time hand gesture recognition using CameraX + MediaPipe Tasks Vision (recognizes Fist, Open Palm, Pointing Up, Thumb Up/Down, Victory, ILY gestures) with live TTS feedback
 - **Companion Score** — gamified points, levels, leaderboard
-- **Contacts, Medication reminders, Hospital finder, Learning center, Awareness & rights**
-- **Be My Eyes** — simulated live volunteer camera
-- **Smart Glasses** — mock BLE hardware connection + obstacle distance warning
+- **Contacts, Medication reminders, Hospital finder, Learning center (real ASL + mobility videos), Awareness & rights**
+- **Be My Eyes** — simulated live volunteer camera (clearly labeled as a demo)
 - **Accessibility** — AR/FR localization, dark/light/system themes, font size & family scaling, TTS speech rate
 - **Guest mode, JWT auth, backup/restore**
+- **Automated tests** — unit tests for the AI accessibility reply engine + instrumented Room DAO tests
 
 ## UI Design
 
@@ -67,7 +67,7 @@ The backend runs the REST API on `/api` and a WebSocket server on `/ws`. See `ba
 2. Create `local.properties` with `sdk.dir` if needed.
 3. Point the app at your backend in `app/src/main/java/com/example/rafiq/data/remote/api/ApiConstants.kt`:
    - `BASE_URL` and `WS_URL` default to `http://192.168.137.1:3000/...` (emulator host). Use `http://10.0.2.2:3000` for the Android emulator, or your LAN IP on a physical device.
-4. (Optional) Set a Gemini API key in `gradle.properties` as `GEMINI_API_KEY=...` for real AI replies.
+4. **AI keys (optional but recommended):** create a local `gradle-secrets.properties` at the repo root with a Google Gemini key (`GEMINI_API_KEY=AIza...`) or an OpenAI-compatible key (`GEMINI_API_KEY=sk-...`) for real AI replies. This file is git-ignored; without it the app uses the intelligent built-in accessibility fallback.
 5. Build & run: `./gradlew :app:assembleDebug` or press **Run** in Android Studio.
 
 ### Demo Account
@@ -86,11 +86,18 @@ Password: demo1234
 | `npm run migrate`     | Apply DB migrations              |
 | `npm run seed`        | Insert demo user + sample data   |
 | `./gradlew :app:assembleDebug` | Build debug APK       |
+| `./gradlew :app:testDebugUnitTest` | Run unit tests         |
+| `./gradlew :app:connectedDebugAndroidTest` | Run instrumentation tests (device required) |
 
 ## Tech Stack
 
-- **App:** Kotlin, Jetpack Compose (Material 3), Hilt, Room, Retrofit/OkHttp, DataStore, Firebase (Realtime DB + Messaging), Google Play Services Location, Gemini SDK, MediaPipe Tasks Vision, CameraX
+- **App:** Kotlin, Jetpack Compose (Material 3), Hilt, Room, Retrofit/OkHttp, DataStore, Firebase (Realtime DB + Messaging), Google Play Services Location, Generative AI (Gemini + OpenAI-compatible), MediaPipe Tasks Vision, CameraX, osmdroid (OpenStreetMap)
 - **Backend:** Node.js, Express, PostgreSQL, JWT (bcryptjs + jsonwebtoken), ws, Helmet, CORS, rate limiting
+
+## Testing
+
+- **Unit tests** (`app/src/test`) — `AccessibilityFallbackReplyTest.kt` covers the built-in AI accessibility reply engine (SOS, hospitals, medications, sign language, Be My Eyes, identity, greetings, unknown input).
+- **Instrumented tests** (`app/src/androidTest`) — `RafiqDatabaseDaoTest.kt` exercises Contact, Medication, Place, and ChatMessage Room DAOs against an in-memory database.
 
 ## Sign Language Recognition
 

@@ -15,17 +15,34 @@ rafiq/
 
 ## Features
 
-- **Emergency SOS** — 10s countdown, SMS + Firebase alert to emergency contact, guardian mode; always-available fallbacks after triggering: **Share SOS alert**, **Open location in Google Maps**, **Call emergency number**
-- **AI Chat Assistant** — conversation UI with memory, one-tap clear chat (works instantly, cloud deletes run in background), and AI replies via any **OpenAI-compatible** provider (`sk-...` key + configurable endpoint), with an always-on local accessibility fallback (SOS, hospitals, medications, sign language, Be My Eyes, glasses, companion)
-- **Real Map & Equipped Places** — real **OpenStreetMap** (osmdroid) of Cairo with markers for wheelchair/sign-language/braille-equipped places (+50 pts); demo places are auto-seeded on first run so the map is never empty, and every place offers an **Open in Google Maps** deep link (works even with no map tiles)
-- **Voice Assistant** — speech-to-text with accessibility avatar; responses read aloud via TTS and saved to chat history
-- **Sign Language Recognition** — real-time hand gesture recognition using CameraX + MediaPipe Tasks Vision: 10 signs (Fist, Hello, A, Yes, No, Peace, I Love You + OK, Rock, L) with live TTS feedback
-- **Companion Score** — gamified points, levels, leaderboard
-- **Contacts, Medication reminders, Hospital finder, Learning center (real ASL + mobility videos), Awareness & rights**
-- **Be My Eyes** — simulated live volunteer camera (clearly labeled as a demo)
-- **Accessibility** — AR/FR localization, dark/light/system themes, font size & family scaling, TTS speech rate
-- **Guest mode, JWT auth, backup/restore**
-- **Automated tests** — unit tests for the AI accessibility reply engine + instrumented Room DAO tests
+| | Feature | What it does |
+|---|---|---|
+| 🆘 | **Emergency SOS** | 10s countdown → alert contact by SMS/Firebase; always-available fallbacks: **Share SOS alert**, **Open location in Google Maps**, **Call emergency number** |
+| 🤖 | **AI Chat Assistant** | Conversation with memory, one-tap clear chat (instant, cloud deletes run in background), AI replies via any **OpenAI-compatible** provider + offline accessibility fallback |
+| 🗺️ | **Real Map & Places** | **OpenStreetMap** of Cairo with wheelchair/sign-language/braille markers (+50 pts); auto-seeded demo places; every place has an **Open in Google Maps** deep link |
+| 🎙️ | **Voice Assistant** | Speech-to-text with avatar; replies read aloud via TTS and saved to chat history |
+| ✋ | **Sign Language** | CameraX + MediaPipe: **10 signs** (Fist, Hello, A, Yes, No, Peace, I Love You, OK, Rock, L) with live TTS |
+| 🏆 | **Companion Score** | Gamified points, levels, leaderboard |
+| 👥 | **Contacts** | Emergency contacts used by SOS + guardian mode |
+| 💊 | **Medication reminders** | Track and get reminded to take medication |
+| 🏥 | **Hospital finder** | Find nearby accessible care |
+| 📚 | **Learning center** | Real ASL + mobility videos, awareness & rights |
+| 👁️ | **Be My Eyes** | Simulated live volunteer camera (demo) |
+| ♿ | **Accessibility** | AR/FR localization, dark/light/system themes, font size & family scaling, TTS speed |
+| 🔐 | **Auth & backup** | Guest mode, JWT auth, backup/restore |
+| ✅ | **Automated tests** | AI reply engine + gesture classifier unit tests + Room DAO tests |
+
+### 🔍 How to use (emoji legend)
+
+| Screen | Step |
+|---|---|
+| 🆘 SOS | Open **SOS** → tap **SIMULATE ACCIDENTAL FALL** → countdown → cancel with "I'M OK" or get Share/Call/Map fallback buttons |
+| 🤖 Chat | Open **Chat** → type a message → RAFIQ replies (AI key configured) or the built-in accessibility fallback answers |
+| 🗺️ Map | Open **Map & Places** → see demo markers → tap **Open in Google Maps** on any place to navigate |
+| ✋ Sign language | Open **Sign Language** → allow camera → show a sign (e.g. open palm = Hello) → TTS speaks it |
+| 🎙️ Voice | Open **Voice Assistant** → talk → RAFIQ answers aloud |
+| 💊 Meds | Open **Medications** → add medicine + time → get reminders |
+| ✅ Verify | Bottom bar → **Companion Score** shows points/level; points grow as you add places or chat |
 
 ## UI Design
 

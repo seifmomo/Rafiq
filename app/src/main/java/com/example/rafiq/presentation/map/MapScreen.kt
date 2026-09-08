@@ -47,8 +47,30 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private val CAIRO = GeoPoint(30.0444, 31.2357)
+
+private const val OSM_USER_AGENT =
+    "RAFIQ-Android/1.0 (accessibility companion for people with disabilities; contact: rafiq.app.demo@gmail.com)"
+
+/** Probes OSM's tile server; returns true when the app is being 403-blocked. */
+private suspend fun isOsmTilesBlocked(): Boolean = withContext(Dispatchers.IO) {
+    try {
+        val client = okhttp3.OkHttpClient.Builder()
+            .connectTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+        val request = okhttp3.Request.Builder()
+            .url("https://tile.openstreetmap.org/0/0/0.png")
+            .header("User-Agent", OSM_USER_AGENT)
+            .build()
+        client.newCall(request).execute().use { it.code == 403 }
+    } catch (_: Exception) {
+        false
+    }
+}
 
 private fun openInGoogleMaps(
     context: android.content.Context,
@@ -101,7 +123,7 @@ private fun rememberInternetAvailable(): Boolean {
 }
 
 @Composable
-private fun MapAccessBlockedBanner() {
+private fun MapAccessBlockedBanner(message: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -124,7 +146,7 @@ private fun MapAccessBlockedBanner() {
             )
             Spacer(modifier = Modifier.width(10.dp))
             Text(
-                text = "Map access blocked (no internet). Use \"Open in Google Maps\" on a place below.",
+                text = message,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onErrorContainer,
                 modifier = Modifier.weight(1f)
@@ -142,6 +164,14 @@ fun MapScreen(
     val dbPlaces by viewModel.places.collectAsState()
     val context = LocalContext.current
     val hasInternet = rememberInternetAvailable()
+
+    var tilesBlocked by remember { mutableStateOf(false) }
+    LaunchedEffect(hasInternet) {
+        tilesBlocked = false
+        if (hasInternet) {
+            tilesBlocked = isOsmTilesBlocked()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -168,9 +198,19 @@ fun MapScreen(
         ) {
             LiveMapView(places = dbPlaces)
 
-            if (!hasInternet) {
-                Spacer(modifier = Modifier.height(12.dp))
-                MapAccessBlockedBanner()
+            when {
+                !hasInternet -> {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    MapAccessBlockedBanner(
+                        "Map tiles blocked — no internet. Use \"Open in Google Maps\" on a place below."
+                    )
+                }
+                tilesBlocked -> {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    MapAccessBlockedBanner(
+                        "Map tiles blocked by the OSM server (403 — tile usage policy). Use \"Open in Google Maps\" on a place below."
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -341,7 +381,7 @@ private fun LiveMapView(places: List<EquippedPlaceEntity>) {
 
         // Cairo tag overlay
         Text(
-            text = "Cairo · OpenStreetMap",
+            text = "Cairo © OpenStreetMap contributors",
             color = Color.White,
             fontSize = 11.sp,
             modifier = Modifier

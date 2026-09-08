@@ -132,10 +132,17 @@ class SignLanguageViewModel @Inject constructor(
             val handVisible = landmarks?.isNotEmpty() == true
 
             var gestureName: String? = null
-            if (!gestures.isNullOrEmpty() && gestures[0].isNotEmpty()) {
-                val top = gestures[0][0]
-                if (top.score() > CONFIDENCE_THRESHOLD) {
-                    gestureName = top.categoryName()
+            if (handVisible && landmarks?.isNotEmpty() == true) {
+                val lm = landmarks[0].map {
+                    LandmarkGestureClassifier.Lm(it.x(), it.y(), it.z())
+                }
+                // Custom landmark signs take priority over the frozen model categories
+                gestureName = LandmarkGestureClassifier.classify(lm)
+                if (gestureName == null && !gestures.isNullOrEmpty() && gestures[0].isNotEmpty()) {
+                    val top = gestures[0][0]
+                    if (top.score() > CONFIDENCE_THRESHOLD) {
+                        gestureName = top.categoryName()
+                    }
                 }
             }
 
@@ -249,7 +256,10 @@ class SignLanguageViewModel @Inject constructor(
             "Thumb_Down" to "No",
             "Thumb_Up" to "Yes",
             "Victory" to "Peace",
-            "ILoveYou" to "I Love You"
+            "ILoveYou" to "I Love You",
+            LandmarkGestureClassifier.SIGN_OK to "OK",
+            LandmarkGestureClassifier.SIGN_ROCK to "Rock",
+            LandmarkGestureClassifier.SIGN_L to "L"
         )
     }
 }

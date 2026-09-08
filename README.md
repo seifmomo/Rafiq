@@ -19,7 +19,7 @@ rafiq/
 - **AI Chat Assistant** — conversation UI with memory, one-tap clear chat (works instantly, cloud deletes run in background), and AI replies via any **OpenAI-compatible** provider (`sk-...` key + configurable endpoint), with an always-on local accessibility fallback (SOS, hospitals, medications, sign language, Be My Eyes, glasses, companion)
 - **Real Map & Equipped Places** — real **OpenStreetMap** (osmdroid) of Cairo with markers for wheelchair/sign-language/braille-equipped places (+50 pts); demo places are auto-seeded on first run so the map is never empty, and every place offers an **Open in Google Maps** deep link (works even with no map tiles)
 - **Voice Assistant** — speech-to-text with accessibility avatar; responses read aloud via TTS and saved to chat history
-- **Sign Language Recognition** — real-time hand gesture recognition using CameraX + MediaPipe Tasks Vision (recognizes Fist, Open Palm, Pointing Up, Thumb Up/Down, Victory, ILY gestures) with live TTS feedback
+- **Sign Language Recognition** — real-time hand gesture recognition using CameraX + MediaPipe Tasks Vision: 10 signs (Fist, Hello, A, Yes, No, Peace, I Love You + OK, Rock, L) with live TTS feedback
 - **Companion Score** — gamified points, levels, leaderboard
 - **Contacts, Medication reminders, Hospital finder, Learning center (real ASL + mobility videos), Awareness & rights**
 - **Be My Eyes** — simulated live volunteer camera (clearly labeled as a demo)
@@ -132,7 +132,7 @@ Email:    demo@rafiq.app
 Password: demo1234
 ```
 
-> **Runtime note:** SOS, sign-language recognition, the accessible map, and the intelligent AI reply engine all work **offline / without Firebase**. If Firebase (push + realtime guardian alerts) isn't configured with your own `google-services.json`, the app degrades gracefully — SMS + Share/Call + Google-Maps SOS fallbacks still fire and the UI never crashes.
+> **Runtime note:** SOS, sign-language recognition, the accessible map, and the intelligent AI reply engine all work **offline / without Firebase**. If Firebase (push + realtime guardian alerts) isn't configured with your own `google-services.json`, the app degrades gracefully — SMS + Share/Call + Google-Maps SOS fallbacks still fire and the UI never crashes. The map sends a **real identifying User-Agent** (RAFIQ-Android/1.0) so `tile.openstreetmap.org` does not 403 us under the OSM tile usage policy.
 
 ## Sign Language Recognition
 
@@ -146,7 +146,7 @@ On-device inference via **MediaPipe Gesture Recognizer** with **CameraX** for li
 4. Recognized gestures are mapped to display labels (e.g., "Open_Palm" → "Hello")
 5. The recognized text accumulates and is spoken aloud via TTS
 
-### Supported Gestures
+### Supported Gestures (10 signs)
 
 | Gesture | Label | Description |
 |---------|-------|-------------|
@@ -157,6 +157,11 @@ On-device inference via **MediaPipe Gesture Recognizer** with **CameraX** for li
 | Thumb_Down | No | Thumbs down |
 | Victory | Peace | Two fingers up (V sign) |
 | ILoveYou | I Love You | Pinky + index + thumb extended |
+| *custom* | OK | Thumb + index pinched, other fingers up |
+| *custom* | Rock | Index + pinky up (metal horns), others folded |
+| *custom* | L | Index + thumb extended (ASL L), others folded |
+
+The 7 model gestures come from the bundled MediaPipe model. **OK, Rock and L** are recognized by a lightweight **hand-landmark classifier** (`LandmarkGestureClassifier.kt`, 21 MediaPipe landmarks, pure-Kotlin + unit-tested) that runs on every frame and takes priority over the frozen model categories — adding 3 extra recognizable signs on top of the model's limit.
 
 ### Model Details
 
@@ -171,7 +176,8 @@ On-device inference via **MediaPipe Gesture Recognizer** with **CameraX** for li
 
 ```
 app/src/main/java/com/example/rafiq/presentation/signlanguage/
-├── GestureRecognizerHelper.kt   — MediaPipe setup, YUV→Bitmap conversion, inference wrapper
-├── SignLanguageViewModel.kt     — MVVM ViewModel, model availability check, state management
-└── SignLanguageScreen.kt        — CameraX preview, recognition overlay, permission handling
+├── GestureRecognizerHelper.kt         — MediaPipe setup, YUV→Bitmap conversion, inference wrapper
+├── LandmarkGestureClassifier.kt       — extra OK / Rock / L signs from hand landmarks (unit-tested)
+├── SignLanguageViewModel.kt           — MVVM ViewModel, model availability check, state management
+└── SignLanguageScreen.kt              — CameraX preview, recognition overlay, permission handling
 ```

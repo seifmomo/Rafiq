@@ -7,7 +7,7 @@ import com.example.rafiq.data.local.ChatMessageDao
 import com.example.rafiq.data.local.UserPreferences
 import com.example.rafiq.data.remote.api.ChatApi
 import com.example.rafiq.data.remote.dto.CreateMessageRequest
-import com.example.rafiq.data.remote.GeminiManager
+import com.example.rafiq.data.remote.AiManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,7 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val chatMessageDao: ChatMessageDao,
-    private val geminiManager: GeminiManager,
+    private val aiManager: AiManager,
     private val userPreferences: UserPreferences,
     private val chatApi: ChatApi
 ) : ViewModel() {
@@ -61,7 +61,7 @@ class ChatViewModel @Inject constructor(
             userPreferences.addPoints(10)
 
             _isTyping.value = true
-            val aiResponse = geminiManager.generateResponseWithHistory(text, history)
+            val aiResponse = aiManager.generateResponseWithHistory(text, history)
             _isTyping.value = false
 
             val replyId = UUID.randomUUID().toString()

@@ -16,7 +16,7 @@ rafiq/
 ## Features
 
 - **Emergency SOS** — 10s countdown, SMS + Firebase alert to emergency contact, guardian mode
-- **AI Chat Assistant** — conversation UI with memory, clear-history, cloud sync, and AI replies via **Gemini (AIza…)** or **OpenAI-compatible (sk-…)** keys, with an always-on local accessibility fallback (SOS, hospitals, medications, sign language, Be My Eyes, glasses, companion)
+- **AI Chat Assistant** — conversation UI with memory, clear-history, cloud sync, and AI replies via any **OpenAI-compatible** provider (`sk-...` key + configurable endpoint), with an always-on local accessibility fallback (SOS, hospitals, medications, sign language, Be My Eyes, glasses, companion)
 - **Real Map & Equipped Places** — real **OpenStreetMap** (osmdroid) of Cairo with markers for wheelchair/sign-language/braille-equipped places (+50 pts); add new places from GPS
 - **Voice Assistant** — speech-to-text with accessibility avatar; responses read aloud via TTS and saved to chat history
 - **Sign Language Recognition** — real-time hand gesture recognition using CameraX + MediaPipe Tasks Vision (recognizes Fist, Open Palm, Pointing Up, Thumb Up/Down, Victory, ILY gestures) with live TTS feedback
@@ -69,7 +69,11 @@ The backend runs the REST API on `/api` and a WebSocket server on `/ws`. See `ba
 2. Create `local.properties` with `sdk.dir` if needed.
 3. Point the app at your backend in `app/src/main/java/com/example/rafiq/data/remote/api/ApiConstants.kt`:
    - `BASE_URL` and `WS_URL` default to `http://192.168.137.1:3000/...` (emulator host). Use `http://10.0.2.2:3000` for the Android emulator, or your LAN IP on a physical device.
-4. **AI keys (optional but recommended):** create a local `gradle-secrets.properties` at the repo root with a Google Gemini key (`GEMINI_API_KEY=AIza...`) or an OpenAI-compatible key (`GEMINI_API_KEY=sk-...`) for real AI replies. This file is git-ignored; without it the app uses the intelligent built-in accessibility fallback.
+4. **AI keys (optional but recommended):** create a local `gradle-secrets.properties` at the repo root with an **OpenAI-compatible** key for real AI replies:
+   - `OPENAI_API_KEY=sk-...` (preferred) — or for backward compatibility `GEMINI_API_KEY=sk-...`.
+   - `OPENAI_BASE_URL=https://.../v1/chat/completions` (defaults to OpenAI); point this at any OpenAI-compatible provider (OpenRouter, Groq, Azure, local server, etc.).
+   - `OPENAI_MODEL=gpt-3.5-turbo` (default; change to match your provider).
+   This file is git-ignored; without a valid key the app uses the intelligent built-in accessibility fallback.
 5. Build & run: `./gradlew :app:assembleDebug` or press **Run** in Android Studio.
 
 ### Demo Account
@@ -93,7 +97,7 @@ Password: demo1234
 
 ## Tech Stack
 
-- **App:** Kotlin, Jetpack Compose (Material 3), Hilt, Room, Retrofit/OkHttp, DataStore, Firebase (Realtime DB + Messaging), Google Play Services Location, Generative AI (Gemini + OpenAI-compatible), MediaPipe Tasks Vision, CameraX, osmdroid (OpenStreetMap)
+- **App:** Kotlin, Jetpack Compose (Material 3), Hilt, Room, Retrofit/OkHttp, DataStore, Firebase (Realtime DB + Messaging), Google Play Services Location, OpenAI-compatible AI (configurable endpoint), MediaPipe Tasks Vision, CameraX, osmdroid (OpenStreetMap)
 - **Backend:** Node.js, Express, PostgreSQL, JWT (bcryptjs + jsonwebtoken), ws, Helmet, CORS, rate limiting
 
 ## Testing & Build Status

@@ -10,6 +10,7 @@ import com.google.mediapipe.tasks.vision.gesturerecognizer.GestureRecognizerResu
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,7 +37,13 @@ class SignLanguageViewModel @Inject constructor(
     val uiState: StateFlow<SignLanguageUiState> = _uiState.asStateFlow()
 
     private var gestureRecognizerHelper: GestureRecognizerHelper? = null
-    private var frameTimestampMs = 0L
+    private var lastSubmissionMs = 0L
+    private var pendingFrames = 0
+    private var stableGesture: String? = null
+    private var stableGestureFrames = 0
+    private var gestureGoneFrames = 0
+    private var handPresentFrames = 0
+    private var handAbsentFrames = 0
 
     private fun isModelAvailable(): Boolean {
         return try {
@@ -65,7 +72,7 @@ class SignLanguageViewModel @Inject constructor(
                 onError = ::onGestureRecognizerError
             )
             _uiState.update { it.copy(modelAvailable = true, errorMessage = null) }
-            frameTimestampMs = System.currentTimeMillis()
+            lastSubmissionMs = System.currentTimeMillis() - MIN_FRAME_INTERVAL_MS
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to initialize recognizer", e)
             gestureRecognizerHelper = null
@@ -82,68 +89,123 @@ class SignLanguageViewModel @Inject constructor(
 
     fun processImageProxy(imageProxy: ImageProxy) {
         val helper = gestureRecognizerHelper
-        if (helper != null && helper.isInitialized) {
-            val bitmap = helper.imageProxyToBitmap(imageProxy)
-            if (bitmap != null) {
-                _uiState.update { it.copy(isProcessing = true) }
-                val rotationDegrees = imageProxy.imageInfo.rotationDegrees
-                val timestamp = System.currentTimeMillis()
-                helper.recognizeAsync(bitmap, rotationDegrees, timestamp)
+        if (helper == null || !helper.isInitialized) {
+            imageProxy.close()
+            return
+        }
+
+        val now = System.currentTimeMillis()
+        if (now - lastSubmissionMs < MIN_FRAME_INTERVAL_MS) {
+            imageProxy.close()
+            return
+        }
+        lastSubmissionMs = now
+
+        val rotationDegrees = imageProxy.imageInfo.rotationDegrees
+        val bitmap = helper.imageProxyToBitmap(imageProxy)
+        imageProxy.close()
+        if (bitmap == null) return
+
+        pendingFrames++
+        if (!_uiState.value.isProcessing) {
+            _uiState.update { it.copy(isProcessing = true) }
+        }
+        scheduleProcessingOff()
+        helper.recognizeAsync(bitmap, rotationDegrees, now)
+    }
+
+    private fun scheduleProcessingOff() {
+        viewModelScope.launch {
+            delay(PROCESSING_DEBOUNCE_MS)
+            if (pendingFrames == 0) {
+                _uiState.update { it.copy(isProcessing = false) }
             }
         }
-        imageProxy.close()
     }
 
     private fun onGestureRecognizerResult(result: GestureRecognizerResult) {
         viewModelScope.launch(Dispatchers.Main) {
+            pendingFrames = (pendingFrames - 1).coerceAtLeast(0)
+
             val gestures = result.gestures()
             val landmarks = result.landmarks()
+            val handVisible = landmarks?.isNotEmpty() == true
 
-            if (gestures.isNullOrEmpty() || gestures[0].isEmpty()) {
-                _uiState.update {
-                    it.copy(
-                        isProcessing = false,
-                        handDetected = landmarks?.isNotEmpty() == true,
-                        currentGesture = if (landmarks?.isNotEmpty() == true) "Hand detected" else ""
-                    )
+            var gestureName: String? = null
+            if (!gestures.isNullOrEmpty() && gestures[0].isNotEmpty()) {
+                val top = gestures[0][0]
+                if (top.score() > CONFIDENCE_THRESHOLD) {
+                    gestureName = top.categoryName()
                 }
-                return@launch
             }
 
-            val topGesture = gestures[0][0]
-            val gestureName = topGesture.categoryName()
-            val confidence = topGesture.score()
+            updateHandVisibility(handVisible)
+            updateGesture(gestureName)
+        }
+    }
 
-            if (confidence > CONFIDENCE_THRESHOLD) {
-                val displayText = GESTURE_LABELS[gestureName] ?: gestureName
-                val currentGesture = _uiState.value.currentGesture
-                val isDifferent = displayText != currentGesture
+    private fun updateHandVisibility(handVisible: Boolean) {
+        if (handVisible) {
+            handAbsentFrames = 0
+            handPresentFrames++
+            if (handPresentFrames >= HAND_PRESENT_FRAMES_REQUIRED) {
+                _uiState.update { it.copy(handDetected = true) }
+            }
+        } else {
+            handPresentFrames = 0
+            handAbsentFrames++
+            if (handAbsentFrames >= HAND_ABSENT_FRAMES_REQUIRED) {
+                _uiState.update { it.copy(handDetected = false) }
+                stableGesture = null
+                stableGestureFrames = 0
+            }
+        }
+    }
 
-                _uiState.update { state ->
-                    val newRecognizedText = if (isDifferent && displayText.isNotBlank()) {
-                        if (state.recognizedText.isBlank()) displayText else "${state.recognizedText} $displayText"
-                    } else {
-                        state.recognizedText
-                    }
-                    state.copy(
-                        isProcessing = false,
-                        currentGesture = displayText,
-                        handDetected = true,
-                        recognizedText = newRecognizedText
-                    )
-                }
-
-                if (isDifferent && displayText.isNotBlank()) {
-                    ttsManager.speak(displayText)
-                }
+    private fun updateGesture(gestureName: String?) {
+        if (gestureName != null) {
+            val displayText = GESTURE_LABELS[gestureName] ?: gestureName
+            gestureGoneFrames = 0
+            if (stableGesture == displayText) {
+                stableGestureFrames++
             } else {
-                _uiState.update {
-                    it.copy(
-                        isProcessing = false,
-                        handDetected = landmarks?.isNotEmpty() == true
-                    )
-                }
+                stableGesture = displayText
+                stableGestureFrames = 1
             }
+            if (stableGestureFrames == GESTURE_STABLE_FRAMES_REQUIRED) {
+                commitGesture(displayText)
+            }
+        } else {
+            stableGesture = null
+            stableGestureFrames = 0
+            gestureGoneFrames++
+            if (gestureGoneFrames >= GESTURE_GONE_FRAMES_REQUIRED) {
+                _uiState.update { it.copy(currentGesture = "") }
+            }
+        }
+    }
+
+    private fun commitGesture(displayText: String) {
+        val current = _uiState.value
+        if (displayText == current.currentGesture) return
+
+        val newRecognizedText = if (displayText.isNotBlank()) {
+            if (current.recognizedText.isBlank()) displayText
+            else "${current.recognizedText} $displayText"
+        } else {
+            current.recognizedText
+        }
+
+        _uiState.update {
+            it.copy(
+                currentGesture = displayText,
+                handDetected = true,
+                recognizedText = newRecognizedText
+            )
+        }
+
+        if (displayText.isNotBlank()) {
+            ttsManager.speak(displayText)
         }
     }
 
@@ -173,6 +235,12 @@ class SignLanguageViewModel @Inject constructor(
         private const val TAG = "SignLanguageVM"
         private const val MODEL_FILE = "gesture_recognizer.task"
         private const val CONFIDENCE_THRESHOLD = 0.7f
+        private const val MIN_FRAME_INTERVAL_MS = 140L
+        private const val PROCESSING_DEBOUNCE_MS = 600L
+        private const val HAND_PRESENT_FRAMES_REQUIRED = 3
+        private const val HAND_ABSENT_FRAMES_REQUIRED = 6
+        private const val GESTURE_STABLE_FRAMES_REQUIRED = 3
+        private const val GESTURE_GONE_FRAMES_REQUIRED = 6
 
         private val GESTURE_LABELS = mapOf(
             "Closed_Fist" to "Fist",

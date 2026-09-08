@@ -25,6 +25,51 @@ android {
             ?: "YOUR_API_KEY_HERE"
     }
 
+    val openAiApiKey: String = run {
+        val secretsFile: java.io.File = rootProject.file("gradle-secrets.properties")
+        var value: String? = null
+        if (secretsFile.exists()) {
+            value = secretsFile.readLines()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("OPENAI_API_KEY=") }
+                ?.substringAfter("OPENAI_API_KEY=")
+                ?.trim()
+        }
+        value
+            ?: (project.findProperty("OPENAI_API_KEY") as? String)
+            ?: ""
+    }
+
+    val openAiBaseUrl: String = run {
+        val secretsFile: java.io.File = rootProject.file("gradle-secrets.properties")
+        var value: String? = null
+        if (secretsFile.exists()) {
+            value = secretsFile.readLines()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("OPENAI_BASE_URL=") }
+                ?.substringAfter("OPENAI_BASE_URL=")
+                ?.trim()
+        }
+        value
+            ?: (project.findProperty("OPENAI_BASE_URL") as? String)
+            ?: "https://api.openai.com/v1/chat/completions"
+    }
+
+    val openAiModel: String = run {
+        val secretsFile: java.io.File = rootProject.file("gradle-secrets.properties")
+        var value: String? = null
+        if (secretsFile.exists()) {
+            value = secretsFile.readLines()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("OPENAI_MODEL=") }
+                ?.substringAfter("OPENAI_MODEL=")
+                ?.trim()
+        }
+        value
+            ?: (project.findProperty("OPENAI_MODEL") as? String)
+            ?: "gpt-3.5-turbo"
+    }
+
     defaultConfig {
         applicationId = "com.example.rafiq"
         minSdk = 24
@@ -35,15 +80,24 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        buildConfigField("String", "OPENAI_API_KEY", "\"$openAiApiKey\"")
+        buildConfigField("String", "OPENAI_BASE_URL", "\"$openAiBaseUrl\"")
+        buildConfigField("String", "OPENAI_MODEL", "\"$openAiModel\"")
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
             buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+            buildConfigField("String", "OPENAI_API_KEY", "\"$openAiApiKey\"")
+            buildConfigField("String", "OPENAI_BASE_URL", "\"$openAiBaseUrl\"")
+            buildConfigField("String", "OPENAI_MODEL", "\"$openAiModel\"")
         }
         debug {
             buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+            buildConfigField("String", "OPENAI_API_KEY", "\"$openAiApiKey\"")
+            buildConfigField("String", "OPENAI_BASE_URL", "\"$openAiBaseUrl\"")
+            buildConfigField("String", "OPENAI_MODEL", "\"$openAiModel\"")
         }
     }
     compileOptions {
@@ -101,9 +155,6 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.database)
     implementation(libs.firebase.messaging)
-
-    // Gemini AI
-    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
 
     // MediaPipe Gesture Recognizer
     implementation(libs.mediapipe.tasks.vision)

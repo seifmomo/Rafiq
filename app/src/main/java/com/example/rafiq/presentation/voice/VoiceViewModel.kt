@@ -12,7 +12,7 @@ import com.example.rafiq.data.hardware.TtsManager
 import com.example.rafiq.data.local.ChatMessage
 import com.example.rafiq.data.local.ChatMessageDao
 import com.example.rafiq.data.local.UserPreferences
-import com.example.rafiq.data.remote.GeminiManager
+import com.example.rafiq.data.remote.AiManager
 import com.example.rafiq.data.remote.api.ChatApi
 import com.example.rafiq.data.remote.dto.CreateMessageRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,7 +28,7 @@ import javax.inject.Inject
 class VoiceViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val ttsManager: TtsManager,
-    private val geminiManager: GeminiManager,
+    private val aiManager: AiManager,
     private val userPreferences: UserPreferences,
     private val chatMessageDao: ChatMessageDao,
     private val chatApi: ChatApi
@@ -82,7 +82,7 @@ class VoiceViewModel @Inject constructor(
                 _spokenText.value = spoken
 
                 viewModelScope.launch {
-                    val aiResponse = geminiManager.processVoiceCommand(spoken)
+                    val aiResponse = aiManager.processVoiceCommand(spoken)
                     ttsManager.speak(aiResponse)
                     userPreferences.addPoints(15)
                     persistConversation(spoken, aiResponse)

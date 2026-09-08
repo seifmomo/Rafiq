@@ -2,17 +2,20 @@ package com.example.rafiq.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val DeepBlue = Color(0xFF0F172A)
-val DeepBlueLight = Color(0xFF1E293B)
-val DeepBlueDark = Color(0xFF020617)
+val DeepBlue = Color(0xFF0B1626)
+val DeepBlueLight = Color(0xFF17283F)
+val DeepBlueDark = Color(0xFF03081A)
 
-val Cyan = Color(0xFF06B6D4)
-val CyanLight = Color(0xFF22D3EE)
-val CyanSoft = Color(0xFFCFFAFE)
+val Cyan = Color(0xFF03DCE1)
+val CyanLight = Color(0xFF49E5EB)
+val CyanSoft = Color(0xFFD1FAFA)
 
-val Teal = Color(0xFF14B8A6)
-val TealLight = Color(0xFF2DD4BF)
-val TealSoft = Color(0xFFCCFBF1)
+val Teal = Color(0xFF1FB8CE)
+val TealLight = Color(0xFF4AC9DE)
+val TealSoft = Color(0xFFD6F5F8)
+
+val VividBlue = Color(0xFF0155F3)
+val VividBlueSoft = Color(0xFFDCE7FF)
 
 val Surface = Color(0xFFFFFFFF)
 val SurfaceDim = Color(0xFFF8FAFC)
@@ -33,12 +36,12 @@ val SuccessGreenLight = Color(0xFFD1FAE5)
 val WarningAmber = Color(0xFFF59E0B)
 val WarningAmberLight = Color(0xFFFEF3C7)
 
-val AccentGradientStart = Color(0xFF06B6D4)
-val AccentGradientEnd = Color(0xFF14B8A6)
+val AccentGradientStart = Color(0xFF03DCE1)
+val AccentGradientEnd = Color(0xFF0155F3)
 
-val HeaderGradientStart = Color(0xFF0F172A)
-val HeaderGradientMid = Color(0xFF1E293B)
-val HeaderGradientEnd = Color(0xFF0F172A)
+val HeaderGradientStart = Color(0xFF0B1626)
+val HeaderGradientMid = Color(0xFF17283F)
+val HeaderGradientEnd = Color(0xFF0B1626)
 
 val GlassWhite = Color(0x15FFFFFF)
 val GlassWhiteMedium = Color(0x25FFFFFF)
@@ -75,7 +78,7 @@ val CustomOutline = Outline
 val CustomOutlineDark = Color(0xFF2A3A52)
 val ErrorRedBright = Color(0xFFEF4444)
 val WarningOrange = Color(0xFFEF6C00)
-val PrimaryGradientStart = Color(0xFF0066CC)
+val PrimaryGradientStart = Color(0xFF0155F3)
 val PrimaryGradientEnd = CyanLight
 val CyanBright = CyanLight
-val BlueDeep = Color(0xFF0066CC)
+val BlueDeep = Color(0xFF0155F3)

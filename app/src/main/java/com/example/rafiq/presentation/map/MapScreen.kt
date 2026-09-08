@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Store
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.WheelchairPickup
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,7 +29,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.Uri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -58,6 +64,75 @@ private fun openInGoogleMaps(
     context.startActivity(Intent(Intent.ACTION_VIEW, uri))
 }
 
+private fun isNetworkAvailable(context: Context): Boolean {
+    val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        ?: return false
+    val network = cm.activeNetwork ?: return false
+    val capabilities = cm.getNetworkCapabilities(network) ?: return false
+    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+}
+
+@Composable
+private fun rememberInternetAvailable(): Boolean {
+    val context = LocalContext.current
+    var available by remember { mutableStateOf(isNetworkAvailable(context)) }
+    DisposableEffect(Unit) {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                available = true
+            }
+
+            override fun onLost(network: Network) {
+                available = isNetworkAvailable(context)
+            }
+        }
+        if (cm != null) {
+            val request = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+            cm.registerDefaultNetworkCallback(callback)
+        }
+        onDispose {
+            cm?.unregisterNetworkCallback(callback)
+        }
+    }
+    return available
+}
+
+@Composable
+private fun MapAccessBlockedBanner() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.Warning,
+                contentDescription = "Map access blocked",
+                tint = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = "Map access blocked (no internet). Use \"Open in Google Maps\" on a place below.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
@@ -66,6 +141,7 @@ fun MapScreen(
 ) {
     val dbPlaces by viewModel.places.collectAsState()
     val context = LocalContext.current
+    val hasInternet = rememberInternetAvailable()
 
     Scaffold(
         topBar = {
@@ -91,6 +167,11 @@ fun MapScreen(
                 .padding(padding)
         ) {
             LiveMapView(places = dbPlaces)
+
+            if (!hasInternet) {
+                Spacer(modifier = Modifier.height(12.dp))
+                MapAccessBlockedBanner()
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

@@ -51,18 +51,17 @@ class ChatViewModel @Inject constructor(
             )
             chatMessageDao.insertMessage(userMessage)
 
-            // Sync to cloud
-            try {
-                chatApi.sendMessage(
-                    CreateMessageRequest(msgId, text, "user", timestamp)
-                )
-            } catch (_: Exception) {}
+            // Cloud sync must never block the AI reply (LAN backend may be unreachable)
+            syncToCloud(msgId, text, "user", timestamp)
 
             userPreferences.addPoints(10)
 
             _isTyping.value = true
-            val aiResponse = aiManager.generateResponseWithHistory(text, history)
-            _isTyping.value = false
+            val aiResponse = try {
+                aiManager.generateResponseWithHistory(text, history)
+            } finally {
+                _isTyping.value = false
+            }
 
             val replyId = UUID.randomUUID().toString()
             val replyTimestamp = System.currentTimeMillis()
@@ -75,23 +74,26 @@ class ChatViewModel @Inject constructor(
             )
             chatMessageDao.insertMessage(reply)
 
-            // Sync AI reply to cloud
-            try {
-                chatApi.sendMessage(
-                    CreateMessageRequest(replyId, aiResponse, "rafiq", replyTimestamp)
-                )
-            } catch (_: Exception) {}
+            syncToCloud(replyId, aiResponse, "rafiq", replyTimestamp)
         }
     }
 
     fun clearHistory() {
         viewModelScope.launch {
-            try {
-                chatMessageDao.getAllMessagesOnce().forEach { msg ->
-                    runCatching { chatApi.deleteMessage(msg.id) }
-                }
-            } catch (_: Exception) {}
+            val ids = chatMessageDao.getAllMessagesOnce().map { it.id }
+            // Clear locally first and immediately — never wait on the cloud
             chatMessageDao.clearAll()
+            ids.forEach { id ->
+                launch { runCatching { chatApi.deleteMessage(id) } }
+            }
+        }
+    }
+
+    private fun syncToCloud(id: String, message: String, sender: String, timestamp: Long) {
+        viewModelScope.launch {
+            runCatching {
+                chatApi.sendMessage(CreateMessageRequest(id, message, sender, timestamp))
+            }
         }
     }
 

@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -42,6 +44,20 @@ import org.osmdroid.views.overlay.Marker
 
 private val CAIRO = GeoPoint(30.0444, 31.2357)
 
+private fun openInGoogleMaps(
+    context: android.content.Context,
+    latitude: Double,
+    longitude: Double,
+    label: String
+) {
+    val query = Uri.encode(
+        if (label.isBlank()) "$latitude,$longitude"
+        else "${label} $latitude,$longitude"
+    )
+    val uri = Uri.parse("https://www.google.com/maps/search/?api=1&query=$query")
+    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
@@ -49,6 +65,7 @@ fun MapScreen(
     viewModel: MapViewModel = hiltViewModel()
 ) {
     val dbPlaces by viewModel.places.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -120,23 +137,45 @@ fun MapScreen(
                             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                         ) {
-                            Row(
-                                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = if (place.isWheelchairAccessible) Icons.Default.WheelchairPickup else Icons.Default.LocationOn,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(40.dp)
-                                )
-                                Spacer(modifier = Modifier.width(16.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = place.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                                    Text(text = features.joinToString(" · "), style = MaterialTheme.typography.bodyMedium)
-                                    if (place.description.isNotBlank()) {
-                                        Text(text = place.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Column {
+                                Row(
+                                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = if (place.isWheelchairAccessible) Icons.Default.WheelchairPickup else Icons.Default.LocationOn,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(40.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(text = place.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                        Text(text = features.joinToString(" · "), style = MaterialTheme.typography.bodyMedium)
+                                        if (place.description.isNotBlank()) {
+                                            Text(text = place.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        }
                                     }
+                                }
+                                TextButton(
+                                    onClick = {
+                                        openInGoogleMaps(
+                                            context = context,
+                                            latitude = place.latitude,
+                                            longitude = place.longitude,
+                                            label = place.name
+                                        )
+                                    },
+                                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 8.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.LocationOn,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Open in Google Maps")
                                 }
                             }
                         }

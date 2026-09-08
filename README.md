@@ -15,9 +15,9 @@ rafiq/
 
 ## Features
 
-- **Emergency SOS** — 10s countdown, SMS + Firebase alert to emergency contact, guardian mode
-- **AI Chat Assistant** — conversation UI with memory, clear-history, cloud sync, and AI replies via any **OpenAI-compatible** provider (`sk-...` key + configurable endpoint), with an always-on local accessibility fallback (SOS, hospitals, medications, sign language, Be My Eyes, glasses, companion)
-- **Real Map & Equipped Places** — real **OpenStreetMap** (osmdroid) of Cairo with markers for wheelchair/sign-language/braille-equipped places (+50 pts); add new places from GPS
+- **Emergency SOS** — 10s countdown, SMS + Firebase alert to emergency contact, guardian mode; always-available fallbacks after triggering: **Share SOS alert**, **Open location in Google Maps**, **Call emergency number**
+- **AI Chat Assistant** — conversation UI with memory, one-tap clear chat (works instantly, cloud deletes run in background), and AI replies via any **OpenAI-compatible** provider (`sk-...` key + configurable endpoint), with an always-on local accessibility fallback (SOS, hospitals, medications, sign language, Be My Eyes, glasses, companion)
+- **Real Map & Equipped Places** — real **OpenStreetMap** (osmdroid) of Cairo with markers for wheelchair/sign-language/braille-equipped places (+50 pts); demo places are auto-seeded on first run so the map is never empty, and every place offers an **Open in Google Maps** deep link (works even with no map tiles)
 - **Voice Assistant** — speech-to-text with accessibility avatar; responses read aloud via TTS and saved to chat history
 - **Sign Language Recognition** — real-time hand gesture recognition using CameraX + MediaPipe Tasks Vision (recognizes Fist, Open Palm, Pointing Up, Thumb Up/Down, Victory, ILY gestures) with live TTS feedback
 - **Companion Score** — gamified points, levels, leaderboard
@@ -29,7 +29,7 @@ rafiq/
 
 ## UI Design
 
-- **Color palette:** Teal (#14B8A6), Cyan (#06B6D4), Dark Navy (#0F172A), White surfaces
+- **Color palette:** Deep Navy (#0B1626 background), Vivid Blue (#0155F3), Cyan (#03DCE1), Teal accents — aligned with the RAFIQ logo
 - **Design language:** Clean, modern, medical/accessibility-focused — inspired by Samsung Health and ChatGPT
 - **Typography:** Dynamic font scaling (small/normal/large/xlarge) with multiple font families
 - **Dark mode:** Deep navy backgrounds with Cyan/Teal accents
@@ -70,10 +70,10 @@ The backend runs the REST API on `/api` and a WebSocket server on `/ws`. See `ba
 3. Point the app at your backend in `app/src/main/java/com/example/rafiq/data/remote/api/ApiConstants.kt`:
    - `BASE_URL` and `WS_URL` default to `http://192.168.137.1:3000/...` (emulator host). Use `http://10.0.2.2:3000` for the Android emulator, or your LAN IP on a physical device.
 4. **AI keys (optional but recommended):** create a local `gradle-secrets.properties` at the repo root with an **OpenAI-compatible** key for real AI replies:
-   - `OPENAI_API_KEY=sk-...` (preferred) — or for backward compatibility `GEMINI_API_KEY=sk-...`.
-   - `OPENAI_BASE_URL=https://.../v1/chat/completions` (defaults to OpenAI); point this at any OpenAI-compatible provider (OpenRouter, Groq, Azure, local server, etc.).
-   - `OPENAI_MODEL=gpt-3.5-turbo` (default; change to match your provider).
-   This file is git-ignored; without a valid key the app uses the intelligent built-in accessibility fallback.
+   - `OPENAI_API_KEY=sk-or-...` (OpenRouter) or `sk-...` (OpenAI / other providers) — for backward compatibility `GEMINI_API_KEY=sk-...` is also accepted.
+   - `OPENAI_BASE_URL=https://openrouter.ai/api/v1/chat/completions` (defaults to OpenAI); point this at any OpenAI-compatible provider (OpenRouter, Groq, Azure, local server, etc.).
+   - `OPENAI_MODEL=openrouter/free` (default is `gpt-3.5-turbo`; use `liquid/lfm-2.5-2.6b:free` on OpenRouter for a free, reliable demo model).
+   This file is git-ignored; without a valid key the app uses the intelligent built-in accessibility fallback. API timeouts are short (8s) so chat stays responsive even when the demo backend isn't running.
 5. Build & run: `./gradlew :app:assembleDebug` or press **Run** in Android Studio.
 
 ### Demo Account
@@ -132,7 +132,7 @@ Email:    demo@rafiq.app
 Password: demo1234
 ```
 
-> **Runtime note:** SOS, sign-language recognition, the accessible map, and the intelligent AI reply engine all work **offline / without Firebase**. If Firebase (push + realtime guardian alerts) isn't configured with your own `google-services.json`, the app degrades gracefully — SMS + backend WebSocket SOS still fire and the UI never crashes.
+> **Runtime note:** SOS, sign-language recognition, the accessible map, and the intelligent AI reply engine all work **offline / without Firebase**. If Firebase (push + realtime guardian alerts) isn't configured with your own `google-services.json`, the app degrades gracefully — SMS + Share/Call + Google-Maps SOS fallbacks still fire and the UI never crashes.
 
 ## Sign Language Recognition
 

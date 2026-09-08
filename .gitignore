@@ -20,3 +20,6 @@ mediapipe-master/
 # Local-only secrets (API keys live here, never committed)
 /gradle-secrets.properties
 /gradle.properties.local
+
+# build log
+gradle_build.log

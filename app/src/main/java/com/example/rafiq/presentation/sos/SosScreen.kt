@@ -1,13 +1,13 @@
 package com.example.rafiq.presentation.sos
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -37,6 +37,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContactEmergency
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -46,6 +49,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -95,6 +99,7 @@ fun SosScreen(
     val sosSent by viewModel.sosSent.collectAsState()
     val sosError by viewModel.sosError.collectAsState()
     val emergencyContact by viewModel.emergencyContact.collectAsState()
+    val lastLocationUrl by viewModel.lastLocationUrl.collectAsState()
 
     val context = LocalContext.current
     val userPreferences = remember { UserPreferences(context) }
@@ -107,14 +112,6 @@ fun SosScreen(
                 Manifest.permission.SEND_SMS
             ) == PackageManager.PERMISSION_GRANTED
         )
-    }
-    val smsPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        hasSmsPermission = granted
-        if (granted) {
-            viewModel.simulateFall()
-        }
     }
 
     var lastVibratedCountdown by remember { mutableIntStateOf(-1) }
@@ -248,11 +245,7 @@ fun SosScreen(
 
                 Button(
                     onClick = {
-                        if (hasSmsPermission) {
-                            viewModel.simulateFall()
-                        } else {
-                            smsPermissionLauncher.launch(Manifest.permission.SEND_SMS)
-                        }
+                        viewModel.simulateFall()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = ErrorRed,
@@ -274,7 +267,7 @@ fun SosScreen(
                 if (!hasSmsPermission) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "SMS permission is required to send emergency alerts to your contacts.",
+                        text = "Tip: grant SMS permission for automatic alerts, or use Share / Call after the countdown.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                         textAlign = TextAlign.Center
@@ -370,6 +363,69 @@ fun SosScreen(
                                     )
                                 }
                             }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                val shareText = buildString {
+                                    append("EMERGENCY: RAFIQ user needs help!")
+                                    append("\nAlert sent to: $emergencyContact")
+                                    lastLocationUrl?.let { append("\nLocation: $it") }
+                                }
+                                val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, shareText)
+                                }
+                                context.startActivity(
+                                    Intent.createChooser(sendIntent, "Share SOS Alert")
+                                )
+                            },
+                            shape = RoundedCornerShape(24.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Share SOS Alert", fontWeight = FontWeight.Bold)
+                        }
+
+                        if (lastLocationUrl != null) {
+                            OutlinedButton(
+                                onClick = {
+                                    context.startActivity(
+                                        Intent(Intent.ACTION_VIEW, Uri.parse(lastLocationUrl))
+                                    )
+                                },
+                                shape = RoundedCornerShape(24.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(Icons.Default.Place, contentDescription = null, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Open My Location in Maps", fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                val phoneNumber = emergencyContact
+                                    .takeIf { it.isNotBlank() && it != "+1234567890" }
+                                    ?: "911"
+                                context.startActivity(
+                                    Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phoneNumber"))
+                                )
+                            },
+                            shape = RoundedCornerShape(24.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Default.Phone, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Call Emergency Number", fontWeight = FontWeight.Bold)
                         }
                     }
 

@@ -52,6 +52,12 @@ class SosViewModel @Inject constructor(
     private val _sosError = MutableStateFlow<String?>(null)
     val sosError: StateFlow<String?> = _sosError.asStateFlow()
 
+    private val _lastLocation = MutableStateFlow<Pair<Double, Double>?>(null)
+    val lastLocation: StateFlow<Pair<Double, Double>?> = _lastLocation.asStateFlow()
+
+    private val _lastLocationUrl = MutableStateFlow<String?>(null)
+    val lastLocationUrl: StateFlow<String?> = _lastLocationUrl.asStateFlow()
+
     val emergencyContact: StateFlow<String> = userPreferences.emergencyContact
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "+1234567890")
 
@@ -64,6 +70,8 @@ class SosViewModel @Inject constructor(
         _countdown.value = 10
         _sosSent.value = false
         _sosError.value = null
+        _lastLocation.value = null
+        _lastLocationUrl.value = null
         startCountdown()
     }
 
@@ -74,6 +82,8 @@ class SosViewModel @Inject constructor(
         _countdown.value = 10
         _sosSent.value = false
         _sosError.value = null
+        _lastLocation.value = null
+        _lastLocationUrl.value = null
     }
 
     private fun startCountdown() {
@@ -117,9 +127,11 @@ class SosViewModel @Inject constructor(
             val locationUrl = if (lat != 0.0 || lng != 0.0) {
                 "https://maps.google.com/?q=$lat,$lng"
             } else {
-                "Location unavailable"
+                null
             }
-            val message = "EMERGENCY: RAFIQ user needs help! $locationUrl"
+            _lastLocation.value = if (locationUrl != null) Pair(lat, lng) else null
+            _lastLocationUrl.value = locationUrl
+            val message = "EMERGENCY: RAFIQ user needs help! ${locationUrl ?: "Location unavailable"}"
 
             val smsManager: SmsManager = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 context.getSystemService(SmsManager::class.java)
@@ -133,10 +145,10 @@ class SosViewModel @Inject constructor(
 
             _sosSent.value = true
         } catch (e: SecurityException) {
-            _sosError.value = "SMS permission not granted. Please allow SMS in settings."
+            _sosError.value = "SMS permission not granted. Use Share / Call below to alert your contact."
             _sosSent.value = true
         } catch (e: Exception) {
-            _sosError.value = "Failed to send SOS: ${e.localizedMessage ?: "Unknown error"}"
+            _sosError.value = "Failed to send SMS: ${e.localizedMessage ?: "Unknown error"}"
             _sosSent.value = true
         }
     }

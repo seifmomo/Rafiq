@@ -3,6 +3,8 @@
 > Everything you need to build your slides and rehearse a winning demo.
 > Use this as your prompt for an AI deck-builder (Gamma, Canva.ai, PowerPoint Designer, Tome) and as your speaking script.
 
+> 📌 **Using Claude?** See [`CLAUDE_DECK_PROMPT.md`](CLAUDE_DECK_PROMPT.md) for a ready-to-paste prompt that generates a polished 9-slide HTML deck (emotional-impact angle, 5–7 min).
+
 ---
 
 ## 1. THE HOOK (first 30 seconds)

@@ -19,7 +19,7 @@ rafiq/
 |---|---|---|
 | 🆘 | **Emergency SOS** | 10s countdown → alert contact by SMS/Firebase; always-available fallbacks: **Share SOS alert**, **Open location in Google Maps**, **Call emergency number** |
 | 🤖 | **AI Chat Assistant** | Conversation with memory, one-tap clear chat (instant, cloud deletes run in background), AI replies via any **OpenAI-compatible** provider + offline accessibility fallback |
-| 🗺️ | **Real Map & Places** | **OpenStreetMap** of Cairo with wheelchair/sign-language/braille markers (+50 pts); auto-seeded demo places; every place has an **Open in Google Maps** deep link |
+| 🗺️ | **Real Map & Places** | **OpenStreetMap data** (Carto Voyager basemap — avoids OSM's strict volunteer-tile 403 policy) with wheelchair/sign-language/braille markers (+50 pts); auto-seeded demo places; every place has an **Open in Google Maps** deep link |
 | 🎙️ | **Voice Assistant** | Speech-to-text with avatar; replies read aloud via TTS and saved to chat history |
 | ✋ | **Sign Language** | CameraX + MediaPipe: **10 signs** (Fist, Hello, A, Yes, No, Peace, I Love You, OK, Rock, L) with live TTS |
 | 🏆 | **Companion Score** | Gamified points, levels, leaderboard |
@@ -149,7 +149,7 @@ Email:    demo@rafiq.app
 Password: demo1234
 ```
 
-> **Runtime note:** SOS, sign-language recognition, the accessible map, and the intelligent AI reply engine all work **offline / without Firebase**. If Firebase (push + realtime guardian alerts) isn't configured with your own `google-services.json`, the app degrades gracefully — SMS + Share/Call + Google-Maps SOS fallbacks still fire and the UI never crashes. The map sends a **real identifying User-Agent** (RAFIQ-Android/1.0) so `tile.openstreetmap.org` does not 403 us under the OSM tile usage policy.
+> **Runtime note:** SOS, sign-language recognition, the accessible map, and the intelligent AI reply engine all work **offline / without Firebase**. If Firebase (push + realtime guardian alerts) isn't configured with your own `google-services.json`, the app degrades gracefully — SMS + Share/Call + Google-Maps SOS fallbacks still fire and the UI never crashes. The map loads **Carto Voyager (OSM data)** tiles with a real identifying User-Agent instead of `tile.openstreetmap.org`, which 403s demos under its tile usage policy.
 
 ## Sign Language Recognition
 
@@ -165,18 +165,18 @@ On-device inference via **MediaPipe Gesture Recognizer** with **CameraX** for li
 
 ### Supported Gestures (10 signs)
 
-| Gesture | Label | Description |
-|---------|-------|-------------|
-| Open_Palm | Hello | Open hand facing camera |
-| Closed_Fist | Fist | Closed fist |
-| Pointing_Up | A | Index finger pointing up |
-| Thumb_Up | Yes | Thumbs up |
-| Thumb_Down | No | Thumbs down |
-| Victory | Peace | Two fingers up (V sign) |
-| ILoveYou | I Love You | Pinky + index + thumb extended |
-| *custom* | OK | Thumb + index pinched, other fingers up |
-| *custom* | Rock | Index + pinky up (metal horns), others folded |
-| *custom* | L | Index + thumb extended (ASL L), others folded |
+| Emoji | Gesture | Label | Description |
+|-------|---------|-------|-------------|
+| 🖐️ | Open_Palm | Hello | Open hand facing camera |
+| ✊ | Closed_Fist | Fist | Closed fist |
+| ☝️ | Pointing_Up | A | Index finger pointing up |
+| 👍 | Thumb_Up | Yes | Thumbs up |
+| 👎 | Thumb_Down | No | Thumbs down |
+| ✌️ | Victory | Peace | Two fingers up (V sign) |
+| 🤟 | ILoveYou | I Love You | Pinky + index + thumb extended |
+| 👌 | *custom* | OK | Thumb + index pinched, other fingers up |
+| 🤘 | *custom* | Rock | Index + pinky up (metal horns), others folded |
+| 👆 | *custom* | L | Index + thumb extended (ASL L), others folded |
 
 The 7 model gestures come from the bundled MediaPipe model. **OK, Rock and L** are recognized by a lightweight **hand-landmark classifier** (`LandmarkGestureClassifier.kt`, 21 MediaPipe landmarks, pure-Kotlin + unit-tested) that runs on every frame and takes priority over the frozen model categories — adding 3 extra recognizable signs on top of the model's limit.
 

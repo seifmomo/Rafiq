@@ -43,7 +43,7 @@ import androidx.navigation.NavController
 import com.example.rafiq.data.local.EquippedPlaceEntity
 import com.example.rafiq.presentation.navigation.Screen
 import com.example.rafiq.ui.components.RafiqTopBar
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.tileprovider.tilesource.XYTileSource
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
@@ -52,21 +52,37 @@ import kotlinx.coroutines.withContext
 
 private val CAIRO = GeoPoint(30.0444, 31.2357)
 
-private const val OSM_USER_AGENT =
+private const val TILE_USER_AGENT =
     "RAFIQ-Android/1.0 (accessibility companion for people with disabilities; contact: rafiq.app.demo@gmail.com)"
 
-/** Probes OSM's tile server; returns true when the app is being 403-blocked. */
-private suspend fun isOsmTilesBlocked(): Boolean = withContext(Dispatchers.IO) {
+/**
+ * Carto Voyager basemap (OpenStreetMap data served from a CDN).
+ * We use this instead of tile.openstreetmap.org because OSM's volunteer-run tile
+ * server enforces a strict usage policy and 403s many demo User-Agents.
+ */
+private val CARTO_VOYAGER = XYTileSource(
+    "CartoVoyager", 0, 19, 256, ".png",
+    arrayOf(
+        "https://a.basemaps.cartocdn.com/rastertiles/voyager/",
+        "https://b.basemaps.cartocdn.com/rastertiles/voyager/",
+        "https://c.basemaps.cartocdn.com/rastertiles/voyager/",
+        "https://d.basemaps.cartocdn.com/rastertiles/voyager/"
+    ),
+    "© OpenStreetMap contributors © CARTO"
+)
+
+/** Probes the tile server; returns true when the app is being HTTP-403-blocked. */
+private suspend fun isTilesBlocked(): Boolean = withContext(Dispatchers.IO) {
     try {
         val client = okhttp3.OkHttpClient.Builder()
             .connectTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
             .readTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
             .build()
         val request = okhttp3.Request.Builder()
-            .url("https://tile.openstreetmap.org/0/0/0.png")
-            .header("User-Agent", OSM_USER_AGENT)
+            .url("https://a.basemaps.cartocdn.com/rastertiles/voyager/0/0/0.png")
+            .header("User-Agent", TILE_USER_AGENT)
             .build()
-        client.newCall(request).execute().use { it.code == 403 }
+        client.newCall(request).execute().use { it.code == 403 || it.code == 401 }
     } catch (_: Exception) {
         false
     }
@@ -169,7 +185,7 @@ fun MapScreen(
     LaunchedEffect(hasInternet) {
         tilesBlocked = false
         if (hasInternet) {
-            tilesBlocked = isOsmTilesBlocked()
+            tilesBlocked = isTilesBlocked()
         }
     }
 
@@ -208,7 +224,7 @@ fun MapScreen(
                 tilesBlocked -> {
                     Spacer(modifier = Modifier.height(12.dp))
                     MapAccessBlockedBanner(
-                        "Map tiles blocked by the OSM server (403 — tile usage policy). Use \"Open in Google Maps\" on a place below."
+                        "Map tiles blocked by the tile server (403 — usage policy). Use \"Open in Google Maps\" on a place below."
                     )
                 }
             }
@@ -340,7 +356,7 @@ private fun LiveMapView(places: List<EquippedPlaceEntity>) {
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
                 MapView(ctx).apply {
-                    setTileSource(TileSourceFactory.MAPNIK)
+                    setTileSource(CARTO_VOYAGER)
                     setMultiTouchControls(true)
                     controller.setZoom(14.0)
                     controller.setCenter(CAIRO)
@@ -379,9 +395,9 @@ private fun LiveMapView(places: List<EquippedPlaceEntity>) {
             }
         )
 
-        // Cairo tag overlay
+        // Attribution overlay (required by both OSM and CARTO)
         Text(
-            text = "Cairo © OpenStreetMap contributors",
+            text = "© OpenStreetMap contributors © CARTO",
             color = Color.White,
             fontSize = 11.sp,
             modifier = Modifier

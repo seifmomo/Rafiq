@@ -20,21 +20,6 @@ function authenticateToken(req, res, next) {
   }
 }
 
-function optionalAuth(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (token) {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = decoded;
-    } catch (error) {
-      // Token invalid, proceed without user
-    }
-  }
-  next();
-}
-
 function generateToken(user) {
   return jwt.sign(
     { 
@@ -47,4 +32,4 @@ function generateToken(user) {
   );
 }
 
-module.exports = { authenticateToken, optionalAuth, generateToken };
+module.exports = { authenticateToken, generateToken };

@@ -7,7 +7,6 @@ import com.example.rafiq.data.local.ChatMessageDao
 import com.example.rafiq.data.local.UserPreferences
 import com.example.rafiq.data.remote.api.ChatApi
 import com.example.rafiq.data.remote.dto.CreateMessageRequest
-import com.example.rafiq.data.remote.dto.SyncMessagesRequest
 import com.example.rafiq.data.remote.GeminiManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

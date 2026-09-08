@@ -1,7 +1,6 @@
 package com.example.rafiq.presentation.signlanguage
 
 import android.content.Context
-import android.graphics.Bitmap
 import android.util.Log
 import androidx.camera.core.ImageProxy
 import androidx.lifecycle.ViewModel
@@ -93,13 +92,6 @@ class SignLanguageViewModel @Inject constructor(
             }
         }
         imageProxy.close()
-    }
-
-    fun processFrame(bitmap: Bitmap) {
-        val helper = gestureRecognizerHelper ?: return
-        _uiState.update { it.copy(isProcessing = true) }
-        val timestamp = System.currentTimeMillis()
-        helper.recognizeAsync(bitmap, 90, timestamp)
     }
 
     private fun onGestureRecognizerResult(result: GestureRecognizerResult) {

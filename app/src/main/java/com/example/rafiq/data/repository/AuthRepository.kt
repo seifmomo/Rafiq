@@ -76,32 +76,6 @@ class AuthRepository @Inject constructor(
         userPreferences.setWhatsNewVersion(0)
     }
 
-    suspend fun getProfile(): Result<UserDto> {
-        return try {
-            val response = authApi.getMe()
-            if (response.isSuccessful) {
-                Result.Success(response.body()!!.user)
-            } else {
-                Result.Error("Failed to fetch profile")
-            }
-        } catch (e: Exception) {
-            Result.Error(e.localizedMessage ?: "Network error")
-        }
-    }
-
-    suspend fun updateDisabilityType(type: String): Result<UserDto> {
-        return try {
-            val response = userApi.updateDisabilityType(DisabilityTypeRequest(type))
-            if (response.isSuccessful) {
-                Result.Success(response.body()!!.user)
-            } else {
-                Result.Error("Failed to update disability type")
-            }
-        } catch (e: Exception) {
-            Result.Error(e.localizedMessage ?: "Network error")
-        }
-    }
-
     suspend fun changePassword(currentPassword: String, newPassword: String): Result<String> {
         return try {
             val response = authApi.changePassword(PasswordChangeRequest(currentPassword, newPassword))

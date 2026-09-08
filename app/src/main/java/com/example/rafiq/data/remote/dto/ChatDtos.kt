@@ -24,12 +24,3 @@ data class CreateMessageRequest(
     @SerializedName("sender") val sender: String,
     @SerializedName("timestamp") val timestamp: Long
 )
-
-data class SyncMessagesRequest(
-    @SerializedName("messages") val messages: List<CreateMessageRequest>
-)
-
-data class SyncMessagesResponse(
-    @SerializedName("synced") val synced: Int,
-    @SerializedName("pointsAwarded") val pointsAwarded: Int
-)

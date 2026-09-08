@@ -14,9 +14,6 @@ interface ChatApi {
     @POST("chat/messages")
     suspend fun sendMessage(@Body request: CreateMessageRequest): Response<MessageResponse>
 
-    @POST("chat/sync")
-    suspend fun syncMessages(@Body request: SyncMessagesRequest): Response<SyncMessagesResponse>
-
     @DELETE("chat/messages/{id}")
     suspend fun deleteMessage(@Path("id") id: String): Response<StatusResponse>
 }

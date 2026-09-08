@@ -13,10 +13,4 @@ interface ScoreboardApi {
 
     @GET("scoreboard/my-rank")
     suspend fun getMyRank(): Response<MyRankResponse>
-
-    @GET("scoreboard/history")
-    suspend fun getScoreHistory(): Response<ScoreHistoryResponse>
-
-    @POST("scoreboard/add-points")
-    suspend fun addPoints(@Body request: AddPointsRequest): Response<AddPointsResponse>
 }

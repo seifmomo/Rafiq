@@ -5,7 +5,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const http = require('http');
-const { WebSocketServer } = require('ws');
 const { setupWebSocket } = require('./websocket');
 
 const authRoutes = require('./routes/auth');

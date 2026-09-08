@@ -61,28 +61,4 @@ class TtsManager @Inject constructor(
             tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId ?: System.currentTimeMillis().toString())
         }
     }
-
-    /**
-     * Speaks the given text without interrupting currently speaking text.
-     * Use for queued informational messages.
-     */
-    fun speakQueued(text: String, utteranceId: String? = null) {
-        if (isInitialized.get()) {
-            tts?.speak(text, TextToSpeech.QUEUE_ADD, null, utteranceId ?: System.currentTimeMillis().toString())
-        }
-    }
-
-    /**
-     * Stops any currently speaking text.
-     */
-    fun stop() {
-        tts?.stop()
-    }
-
-    fun shutdown() {
-        isInitialized.set(false)
-        tts?.stop()
-        tts?.shutdown()
-        tts = null
-    }
 }

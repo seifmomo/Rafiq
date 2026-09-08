@@ -53,17 +53,9 @@ data class UpdateProfileRequest(
     @SerializedName("speechRate") val speechRate: Double? = null
 )
 
-data class DisabilityTypeRequest(
-    @SerializedName("disabilityType") val disabilityType: String
-)
-
 data class PasswordChangeRequest(
     @SerializedName("currentPassword") val currentPassword: String,
     @SerializedName("newPassword") val newPassword: String
-)
-
-data class FcmTokenRequest(
-    @SerializedName("fcmToken") val fcmToken: String
 )
 
 data class GuardianModeRequest(

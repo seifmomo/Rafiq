@@ -14,9 +14,6 @@ interface AuthApi {
     @POST("auth/guest")
     suspend fun guestLogin(@Body request: GuestRequest): Response<AuthResponse>
 
-    @GET("auth/me")
-    suspend fun getMe(): Response<UserResponse>
-
     @PUT("auth/password")
     suspend fun changePassword(@Body request: PasswordChangeRequest): Response<StatusResponse>
 

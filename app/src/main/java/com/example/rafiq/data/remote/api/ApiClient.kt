@@ -55,21 +55,5 @@ object ApiClient {
 
     @Provides
     @Singleton
-    fun providePlaceApi(retrofit: Retrofit): PlaceApi = retrofit.create(PlaceApi::class.java)
-
-    @Provides
-    @Singleton
-    fun provideContactApi(retrofit: Retrofit): ContactApi = retrofit.create(ContactApi::class.java)
-
-    @Provides
-    @Singleton
-    fun provideMedicationApi(retrofit: Retrofit): MedicationApi = retrofit.create(MedicationApi::class.java)
-
-    @Provides
-    @Singleton
     fun provideChatApi(retrofit: Retrofit): ChatApi = retrofit.create(ChatApi::class.java)
-
-    @Provides
-    @Singleton
-    fun provideSosApi(retrofit: Retrofit): SosApi = retrofit.create(SosApi::class.java)
 }

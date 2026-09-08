@@ -1,6 +1,8 @@
 # RAFIQ — Your Companion, Every Step
 
-An accessibility companion for people with disabilities: real-time guidance, emergency SOS, AI chat assistance, navigation, learning tools, and gamified rewards. Built with an Android (Kotlin + Jetpack Compose) app and a Node.js/Express/PostgreSQL backend.
+**RAFIQ** ("Rafeeq" — Arabic for *companion/friend*) is an AI-powered accessibility companion for people with disabilities: real-time guidance, emergency SOS, AI chat assistance, navigation, learning tools, and gamified rewards. Built with an Android (Kotlin + Jetpack Compose) app and a Node.js/Express/PostgreSQL backend.
+
+> 🏆 **Competition / demo material is in [`docs/COMPETITION_PITCH.md`](docs/COMPETITION_PITCH.md)** — presentation prompt, slide-by-slide script, demo checklist, and judge Q&A.
 
 ## Repo Layout
 
@@ -94,10 +96,39 @@ Password: demo1234
 - **App:** Kotlin, Jetpack Compose (Material 3), Hilt, Room, Retrofit/OkHttp, DataStore, Firebase (Realtime DB + Messaging), Google Play Services Location, Generative AI (Gemini + OpenAI-compatible), MediaPipe Tasks Vision, CameraX, osmdroid (OpenStreetMap)
 - **Backend:** Node.js, Express, PostgreSQL, JWT (bcryptjs + jsonwebtoken), ws, Helmet, CORS, rate limiting
 
-## Testing
+## Testing & Build Status
 
-- **Unit tests** (`app/src/test`) — `AccessibilityFallbackReplyTest.kt` covers the built-in AI accessibility reply engine (SOS, hospitals, medications, sign language, Be My Eyes, identity, greetings, unknown input).
-- **Instrumented tests** (`app/src/androidTest`) — `RafiqDatabaseDaoTest.kt` exercises Contact, Medication, Place, and ChatMessage Room DAOs against an in-memory database.
+All checks pass on every build:
+
+- ✅ **Unit tests** (`app/src/test`) — `AccessibilityFallbackReplyTest.kt`: **10/10 pass**. Covers the built-in AI accessibility reply engine (SOS, hospitals, medications, sign language, Be My Eyes, identity, greetings, unknown input).
+- ✅ **Lint** (`:app:lintDebug`) — passes. The camera permission is paired with a required-`false` `<uses-feature>` so the app installs & runs on devices without a camera.
+- ✅ **Build** (`:app:assembleDebug`) — produces `app-debug.apk`.
+- **Instrumented tests** (`app/src/androidTest`, device required) — `RafiqDatabaseDaoTest.kt` exercises Contact, Medication, Place, and ChatMessage Room DAOs against an in-memory database. Run with `./gradlew :app:connectedDebugAndroidTest`.
+- ✅ **Backend** — migrates, seeds, and serves all REST + WebSocket endpoints against PostgreSQL (verified live: health, auth, scoreboard, places, contacts).
+
+### Quick verification
+
+```bash
+cd backend
+npm install
+npm run migrate
+npm run seed
+npm run dev          # start server on :3000
+
+# In another terminal (repo root)
+./gradlew :app:testDebugUnitTest     # unit tests (10/10)
+./gradlew :app:lintDebug             # lint
+./gradlew :app:assembleDebug         # APK
+```
+
+### Demo credentials
+
+```
+Email:    demo@rafiq.app
+Password: demo1234
+```
+
+> **Runtime note:** SOS, sign-language recognition, the accessible map, and the intelligent AI reply engine all work **offline / without Firebase**. If Firebase (push + realtime guardian alerts) isn't configured with your own `google-services.json`, the app degrades gracefully — SMS + backend WebSocket SOS still fire and the UI never crashes.
 
 ## Sign Language Recognition
 

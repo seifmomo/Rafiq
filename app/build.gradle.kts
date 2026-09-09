@@ -70,6 +70,36 @@ android {
             ?: "gpt-3.5-turbo"
     }
 
+    val geminiBaseUrl: String = run {
+        val secretsFile: java.io.File = rootProject.file("gradle-secrets.properties")
+        var value: String? = null
+        if (secretsFile.exists()) {
+            value = secretsFile.readLines()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("GEMINI_BASE_URL=") }
+                ?.substringAfter("GEMINI_BASE_URL=")
+                ?.trim()
+        }
+        value
+            ?: (project.findProperty("GEMINI_BASE_URL") as? String)
+            ?: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+    }
+
+    val geminiModel: String = run {
+        val secretsFile: java.io.File = rootProject.file("gradle-secrets.properties")
+        var value: String? = null
+        if (secretsFile.exists()) {
+            value = secretsFile.readLines()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("GEMINI_MODEL=") }
+                ?.substringAfter("GEMINI_MODEL=")
+                ?.trim()
+        }
+        value
+            ?: (project.findProperty("GEMINI_MODEL") as? String)
+            ?: "gemini-2.5-flash"
+    }
+
     defaultConfig {
         applicationId = "com.example.rafiq"
         minSdk = 24
@@ -83,6 +113,8 @@ android {
         buildConfigField("String", "OPENAI_API_KEY", "\"$openAiApiKey\"")
         buildConfigField("String", "OPENAI_BASE_URL", "\"$openAiBaseUrl\"")
         buildConfigField("String", "OPENAI_MODEL", "\"$openAiModel\"")
+        buildConfigField("String", "GEMINI_BASE_URL", "\"$geminiBaseUrl\"")
+        buildConfigField("String", "GEMINI_MODEL", "\"$geminiModel\"")
     }
 
     buildTypes {
@@ -92,12 +124,16 @@ android {
             buildConfigField("String", "OPENAI_API_KEY", "\"$openAiApiKey\"")
             buildConfigField("String", "OPENAI_BASE_URL", "\"$openAiBaseUrl\"")
             buildConfigField("String", "OPENAI_MODEL", "\"$openAiModel\"")
+            buildConfigField("String", "GEMINI_BASE_URL", "\"$geminiBaseUrl\"")
+            buildConfigField("String", "GEMINI_MODEL", "\"$geminiModel\"")
         }
         debug {
             buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
             buildConfigField("String", "OPENAI_API_KEY", "\"$openAiApiKey\"")
             buildConfigField("String", "OPENAI_BASE_URL", "\"$openAiBaseUrl\"")
             buildConfigField("String", "OPENAI_MODEL", "\"$openAiModel\"")
+            buildConfigField("String", "GEMINI_BASE_URL", "\"$geminiBaseUrl\"")
+            buildConfigField("String", "GEMINI_MODEL", "\"$geminiModel\"")
         }
     }
     compileOptions {

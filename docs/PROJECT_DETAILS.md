@@ -161,19 +161,19 @@ User pays per booking or premium tier · estimated hours × rate shown before co
 - **Phase 2 (6–12 mo):** live tracking + Accessibility Score; Cairo & Alexandria; GCC government pilots.
 - **Phase 3 (12–24 mo):** AI services API, assistive-device marketplace, MENA scaling.
 - **Funding shortlist:** Google for Startups, Injaz Accelerator, AUC V-Lab, Misr El Kheir accessibility program, Sawiris Foundation.
-- **Tech continuity:** Seif (40%) owns codebase; Malak publishes sustainability roadmap; monthly demo milestone.
+- **Tech continuity:** Seif owns the codebase; Malak publishes sustainability roadmap; monthly demo milestone.
 
 ---
 
 ## 12. TEAM & WORKLOAD
 
-| Member | Role | Workload |
-|---|---|---|
-| **Seif** | Lead Developer, Architecture, Google Integration, Demo, Impact Measurement | 40% |
-| **Jana** | Team Leader, Impact Strategist, SDG Alignment, Problem Definition, Presentation Flow | 25% |
-| **Hana** | UX/Design Lead, User Research, Accessibility, Journey, Visual Design | 15% |
-| **Nour** | Business Analyst, ROI Model, Market Research, Funding Strategy | 12% |
-| **Malak** | Sustainability Lead, Post-Hackathon Roadmap, Scalability, Q&A Prep | 8% |
+| Member | Role |
+|---|---|
+| **Seif** | Lead Developer, Architecture, Google Integration, Demo, Impact Measurement |
+| **Jana** | Team Leader, Impact Strategist, SDG Alignment, Problem Definition, Presentation Flow |
+| **Hana** | UX/Design Lead, User Research, Accessibility, Journey, Visual Design |
+| **Nour** | Business Analyst, ROI Model, Market Research, Funding Strategy |
+| **Malak** | Sustainability Lead, Post-Hackathon Roadmap, Scalability, Q&A Prep |
 
 ---
 

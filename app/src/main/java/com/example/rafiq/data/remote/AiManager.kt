@@ -23,13 +23,25 @@ class AiManager @Inject constructor() {
     private val openAiKey: String
         get() {
             val explicit = BuildConfig.OPENAI_API_KEY
-            if (explicit.isNotBlank() && explicit != "YOUR_API_KEY_HERE") return explicit
-            val legacyKey = BuildConfig.GEMINI_API_KEY
-            return if (legacyKey.isNotBlank() && legacyKey.startsWith("sk-")) legacyKey else ""
+            return if (explicit.isNotBlank() && explicit != "YOUR_API_KEY_HERE") explicit else ""
         }
 
+    private val geminiKey: String
+        get() {
+            val k = BuildConfig.GEMINI_API_KEY
+            return if (k.isNotBlank() && k != "YOUR_API_KEY_HERE") k else ""
+        }
+
+    /** Prefer the configured OpenAI-compatible key; otherwise fall back to a Google Gemini key. */
+    private val activeKey: String
+        get() = openAiKey.ifBlank { geminiKey }
+
+    /** True when the active provider is Google Gemini's OpenAI-compatible endpoint. */
+    private val usingGemini: Boolean
+        get() = openAiKey.isBlank() && geminiKey.isNotBlank()
+
     private val apiKeyValid: Boolean
-        get() = openAiKey.isNotBlank()
+        get() = activeKey.isNotBlank()
 
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
@@ -71,8 +83,11 @@ class AiManager @Inject constructor() {
     }
 
     private suspend fun queryOpenAiCompatible(prompt: String, history: List<ChatMessage>): String? {
-        val key = openAiKey
+        val key = activeKey
         if (key.isBlank()) return null
+
+        val baseUrl = if (usingGemini) BuildConfig.GEMINI_BASE_URL else BuildConfig.OPENAI_BASE_URL
+        val model = if (usingGemini) BuildConfig.GEMINI_MODEL else BuildConfig.OPENAI_MODEL
 
         var attempt = 0
         while (attempt < MAX_RETRIES) {
@@ -99,12 +114,12 @@ class AiManager @Inject constructor() {
                 messagesArray.put(userMsg)
 
                 val jsonBody = JSONObject()
-                jsonBody.put("model", BuildConfig.OPENAI_MODEL)
+                jsonBody.put("model", model)
                 jsonBody.put("messages", messagesArray)
                 jsonBody.put("max_tokens", 250)
 
                 val request = Request.Builder()
-                    .url(BuildConfig.OPENAI_BASE_URL)
+                    .url(baseUrl)
                     .addHeader("Authorization", "Bearer $key")
                     .addHeader("Content-Type", "application/json")
                     .post(jsonBody.toString().toRequestBody("application/json".toMediaType()))

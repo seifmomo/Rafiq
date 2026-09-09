@@ -10,6 +10,7 @@
 |---|---|
 | 📊 [`docs/RAFIQ_pitch_deck.pptx`](docs/RAFIQ_pitch_deck.pptx) | **16-slide pitch deck** (AI-powered Accessibility Marketplace) — ready to present/edit |
 | 📋 [`docs/CLAUDE_IMPACTX_PROMPT.md`](docs/CLAUDE_IMPACTX_PROMPT.md) | **Claude/power-user prompt** — full Strategy Coach brief with project details pre-filled + all 7 tasks executed (validation, workload, 7:45 pitch timing, Q&A, 110-pt scorecard, timeline) |
+| 📈 [`docs/MAX_SCORE_PLAN.md`](docs/MAX_SCORE_PLAN.md) | **73 → 110 action plan** — per-criterion checklist to close every gap incl. both +5 bonuses (Google Integration, Presentation Efficiency), with Google Gemini wiring done in code |
 | 📚 [`docs/PROJECT_DETAILS.md`](docs/PROJECT_DETAILS.md) | **All project details & data** — problem, market, solution, business model (10 streams), unit economics, impact KPIs, SDGs, tech stack, roadmap |
 | 🎬 [`docs/AI_VIDEO_PROMPT.md`](docs/AI_VIDEO_PROMPT.md) | **AI video generator prompt** — 3-min pitch video + 60-sec reel + voiceover script (HeyGen/Synthesia/Runway/D-ID ready) |
 
@@ -233,7 +234,8 @@ The backend runs the REST API on `/api` and a WebSocket server on `/ws`. See `ba
 3. Point the app at your backend in `app/src/main/java/com/example/rafiq/data/remote/api/ApiConstants.kt`:
    - `BASE_URL` and `WS_URL` default to `http://192.168.137.1:3000/...` (emulator host). Use `http://10.0.2.2:3000` for the Android emulator, or your LAN IP on a physical device.
 4. **AI keys (optional but recommended):** create a local `gradle-secrets.properties` at the repo root with an **OpenAI-compatible** key for real AI replies:
-   - `OPENAI_API_KEY=sk-or-...` (OpenRouter) or `sk-...` (OpenAI / other providers) — for backward compatibility `GEMINI_API_KEY=sk-...` is also accepted.
+   - `OPENAI_API_KEY=sk-or-...` (OpenRouter) or `sk-...` (OpenAI / other providers).
+   - **Google Gemini:** set `GEMINI_API_KEY=AIza...` (Gemini keys start with `AIza`). When present, RAFIQ uses Google's Gemini endpoint (`GEMINI_BASE_URL`, default `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`) with model `GEMINI_MODEL` (default `gemini-2.5-flash`) — path to the +5 Google Integration bonus. Gemini keys work without any OpenAI key.
    - `OPENAI_BASE_URL=https://openrouter.ai/api/v1/chat/completions` (defaults to OpenAI); point this at any OpenAI-compatible provider (OpenRouter, Groq, Azure, local server, etc.).
    - `OPENAI_MODEL=liquid/lfm-2.5-2.6b:free` (default `gpt-3.5-turbo`).
    This file is git-ignored; without a valid key the app uses the intelligent built-in accessibility fallback. API timeouts are short (8s) so chat stays responsive even when the demo backend isn't running.
@@ -269,8 +271,10 @@ Password: demo1234
 
 ## Tech Stack
 
-- **App:** Kotlin, Jetpack Compose (Material 3), Hilt, Room, Retrofit/OkHttp, DataStore, Firebase (Realtime DB + Messaging), Google Play Services Location, OpenAI-compatible AI (configurable endpoint), MediaPipe Tasks Vision, CameraX, osmdroid (Carto Voyager tiles over OpenStreetMap data)
+- **App:** Kotlin, Jetpack Compose (Material 3), Hilt, Room, Retrofit/OkHttp, DataStore, Firebase (Realtime DB + Messaging), Google Play Services Location, **Google Gemini API** (default `gemini-2.5-flash`, OpenAI-compatible) or any OpenAI-compatible endpoint, **MediaPipe Tasks Vision**, CameraX, osmdroid (Carto Voyager tiles over OpenStreetMap data)
 - **Backend:** Node.js, Express, PostgreSQL, JWT (bcryptjs + jsonwebtoken), ws, Helmet, CORS, rate limiting
+
+> **Google Integration story (IMPACT X +5 bonus):** MediaPipe (on-device sign-language, already shipped), Gemini API (AI assistant replies), Firebase (messaging/analytics), and Google Maps deep links make Google the engine of the product — not a logo.
 
 ## Testing & Build Status
 

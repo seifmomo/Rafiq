@@ -10,12 +10,13 @@ Two parts:
 
 You are the official IMPACT X Hackathon Strategy Coach. Our team of 5 is competing to win by scoring maximum points on the official rubric (total 110 points).
 
-### TEAM MEMBERS & WORKLOAD HIERARCHY (MOST WORK TO LEAST)
-1. SEIF (ME) - 40% workload - Lead Developer, Technical Architect, Core Builder, Google Integration, Demo Creator, Impact Measurer
-2. JANA - 25% workload - Team Leader, Impact Strategist, Presentation Flow, SDG Alignment, Problem Definition
-3. HANA - 15% workload - UX/Design Lead, User Research, Accessibility, User Journey, Visual Design
-4. NOUR - 12% workload - Business Analyst, ROI Model, Market Research, Funding Strategy
-5. MALAK - 8% workload - Sustainability Lead, Post-Hackathon Roadmap, Scalability Plan, Q&A Prep
+### TEAM MEMBERS & ROLES
+
+1. SEIF (ME) - Lead Developer, Technical Architect, Core Builder, Google Integration, Demo Creator, Impact Measurer
+2. JANA - Team Leader, Impact Strategist, Presentation Flow, SDG Alignment, Problem Definition
+3. HANA - UX/Design Lead, User Research, Accessibility, User Journey, Visual Design
+4. NOUR - Business Analyst, ROI Model, Market Research, Funding Strategy
+5. MALAK - Sustainability Lead, Post-Hackathon Roadmap, Scalability Plan, Q&A Prep
 
 ### JUDGING CRITERIA
 1. Problem Definition & Relevance (10 pts)
@@ -89,7 +90,8 @@ This is a permanent structural problem, not a hackathon-borrowed trend.
 
 ### TASK 2: ASSIGN ALL TASKS BY WORKLOAD HIERARCHY
 
-**SEIF (40%)**
+**SEIF**
+
 - Technical Implementation (15): finalize stack; swap osmdroid→Google Maps SDK; swap OpenRouter→Gemini API (or keep OpenRouter + justify); build "become an assistant" flow; add Paymob/Google Pay test-mode checkout; wire real booking persistence to Firebase (or mock API contract).
 - Google Bonus (+5): implement Google Maps Directions ETA inside booking summary + Gemini replies; demo MediaPipe offline sign recognition; wire Firebase Analytics events for KPIs.
 - Solution Quality (10): confirm booking→confirm→email-style confirmation covers the core user need; document privacy (on-device ML, consent screen).
@@ -98,24 +100,28 @@ This is a permanent structural problem, not a hackathon-borrowed trend.
 - Feasibility (10): technical risk register (map API quota, Gemini latency, offline fallback) with mitigations; 4-week roadmap.
 - Demo: rehearse the 30-45s core demo until flawless; prepare offline-safe demo fallback.
 
-**JANA (25%)**
+**JANA**
+
 - Problem Definition (10): final 1-sentence problem statement; evidence pack (WHO+CAPMAS+quote); write story of "Mahmoud, wheelchair user, needed help at 6pm Tuesday."
 - Impact & SDG (15): map to **SDG 8 (Decent Work)**, **SDG 3 (Health)**, **SDG 10 (Reduced Inequalities)**, **SDG 11 (Sustainable Cities)**; define impact KPIs slide (reach, time-saved, income, independence).
 - Presentation & Communication (5): magnetize the 8-minute flow; handshake open + "one number" close.
 - Team coordination: rubric checklist meeting ×2/week; owns the 110-point scorecard.
 
-**HANA (15%)**
+**HANA**
+
 - UX & Solution Quality (10): user journey map (book a helper in 6 taps); accessibility audit (contrast, TalkBack, min touch targets); demo the app on high-contrast + large font.
 - Innovation (10, shared): competitor teardown (Be My Eyes, Care.com, Kawtar apps) → "we combine + go offline."
 - Research (support Jana): 3 persona cards (wheelchair, vision, elderly family) + interview evidence.
 - Visual storytelling: KPI dashboard mock + slide visual theme (clean, warm, accessible).
 
-**NOUR (12%)**
+**NOUR**
+
 - ROI & Business Model (15): unit economics table; 10 revenue streams summary; funding "ask" paragraph; market sizing (Egypt 10-15M PWD + caregivers).
 - Feasibility (10, support Seif): adoption path (NGO pilot → district → city); MVP costs; pricing assumptions.
 - Funding strategy: shortlist grants/accelerators with criteria + deadlines.
 
-**MALAK (8%)**
+**MALAK**
+
 - Sustainability & Continuity (10): post-hackathon roadmap (3 phases); maintenance plan; partner map (NGOs, hospitals, universities); next milestone (pilot launch date).
 - Presentation (support Jana): demo script + Q&A flashcards; timekeeper role (watch the 8-minute clock).
 - Feasibility (support Nour): long-term operating model and team continuity plan.
@@ -177,7 +183,7 @@ This is a permanent structural problem, not a hackathon-borrowed trend.
 
 **Paragraph 2 (Technical + Google Bonus — 15 + 5):** RAFIQ is not a pitch-deck prototype; it is a working, test-passing Android application. We win the implementation criterion with a production-quality stack — Kotlin, Jetpack Compose, Hilt, Room, ViewModel state machine, 18/18 unit tests, lint-clean build — and a genuinely central Google story: MediaPipe runs sign-language recognition on-device, Google Maps SDK powers real arrival-time estimates in the booking engine, and Gemini powers the assistant. Google is not a logo tacked onto a slide; it is the engine of our core demo, offline by design.
 
-**Paragraph 3 (ROI + Sustainability — 15 + 10):** RAFIQ closes the deal on business and continuity. Nour's unit economics convert social need into a credible model — 15% commission on a real booking, premium family plans, B2B accessibility contracts, 10 documented revenue streams — while Malak's plan turns the hackathon exit into a 90-day NGO pilot, an assistant-certification program, and an accelerator application. We answer "what happens after IMPACT X" with a dated roadmap, scored KPIs, and a team whose workload is already distributed (Seif 40 / Jana 25 / Hana 15 / Nour 12 / Malak 8) to survive beyond the weekend.
+**Paragraph 3 (ROI + Sustainability — 15 + 10):** RAFIQ closes the deal on business and continuity. Nour's unit economics convert social need into a credible model — 15% commission on a real booking, premium family plans, B2B accessibility contracts, 10 documented revenue streams — while Malak's plan turns the hackathon exit into a 90-day NGO pilot, an assistant-certification program, and an accelerator application. We answer "what happens after IMPACT X" with a dated roadmap, scored KPIs, and a team whose roles are already distributed to survive beyond the weekend.
 
 ---
 

@@ -9,7 +9,7 @@
     <string name="nav_voice">Voice Assistant</string>
     <string name="nav_settings">Settings</string>
     <string name="nav_sos">Emergency SOS</string>
-    <string name="nav_be_my_eyes">Be My Eyes</string>
+    <string name="nav_assistant_booking">Assistant Booking</string>
     <string name="nav_learning">Learning</string>
     <string name="nav_awareness">Rights &amp; Awareness</string>
     <string name="nav_hospital">Hospital</string>
@@ -23,7 +23,6 @@
     <string name="learn">Learn</string>
     <string name="rights">Rights</string>
     <string name="hospital">Hospital</string>
-    <string name="be_my_eyes">Be My Eyes</string>
     <string name="emergency_sos">EMERGENCY SOS</string>
     <string name="home_screen_desc">Welcome to Rafiq home screen</string>
 

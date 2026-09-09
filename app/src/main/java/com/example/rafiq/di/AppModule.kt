@@ -7,7 +7,9 @@ import com.example.rafiq.data.local.ContactDao
 import com.example.rafiq.data.local.MedicationDao
 import com.example.rafiq.data.local.PlaceDao
 import com.example.rafiq.data.local.RafiqDatabase
+import com.example.rafiq.data.repository.AssistantRepositoryImpl
 import com.example.rafiq.data.repository.PlaceRepositoryImpl
+import com.example.rafiq.domain.repository.AssistantRepository
 import com.example.rafiq.domain.repository.PlaceRepository
 import dagger.Binds
 import dagger.Module
@@ -25,6 +27,12 @@ abstract class AppBindsModule {
     abstract fun bindPlaceRepository(
         placeRepositoryImpl: PlaceRepositoryImpl
     ): PlaceRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAssistantRepository(
+        assistantRepositoryImpl: AssistantRepositoryImpl
+    ): AssistantRepository
 }
 
 @Module

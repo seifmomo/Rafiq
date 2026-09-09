@@ -9,7 +9,7 @@
     <string name="nav_voice">المساعد الصوتي</string>
     <string name="nav_settings">الإعدادات</string>
     <string name="nav_sos">طوارئ SOS</string>
-    <string name="nav_be_my_eyes">كن عيني</string>
+    <string name="nav_assistant_booking">حجز مساعد</string>
     <string name="nav_learning">التعلم</string>
     <string name="nav_awareness">الحقوق والتوعية</string>
     <string name="nav_hospital">المستشفى</string>
@@ -23,7 +23,6 @@
     <string name="learn">تعلم</string>
     <string name="rights">حقوق</string>
     <string name="hospital">مستشفى</string>
-    <string name="be_my_eyes">كن عيني</string>
     <string name="emergency_sos">طوارئ SOS</string>
     <string name="home_screen_desc">الشاشة الرئيسية لتطبيق رافق</string>
 

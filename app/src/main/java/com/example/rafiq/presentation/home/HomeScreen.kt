@@ -49,7 +49,7 @@ import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.SignLanguage
 import androidx.compose.material.icons.filled.Sos
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.SupportAgent
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material3.Button
@@ -98,6 +98,7 @@ import com.example.rafiq.ui.theme.OnSurfaceMuted
 import com.example.rafiq.ui.theme.OnSurfaceVariant
 import com.example.rafiq.ui.theme.SuccessGreen
 import com.example.rafiq.ui.theme.Teal
+import com.example.rafiq.ui.theme.VividBlue
 import com.example.rafiq.ui.theme.WarningAmber
 import com.example.rafiq.util.HapticFeedback
 import kotlinx.coroutines.launch
@@ -165,9 +166,11 @@ fun HomeScreen(
                 HapticFeedback.lightClick(context); navController.navigate(Screen.CompanionScore.route)
             })
 
-            AIAssistantSection(
-                onChatClick = { navController.navigate(Screen.Chat.route) },
-                onVoiceClick = { navController.navigate(Screen.Voice.route) }
+            AssistantBookingCard(
+                onClick = {
+                    HapticFeedback.lightClick(context)
+                    navController.navigate(Screen.AssistantBooking.route)
+                }
             )
 
             QuickActionsRow(
@@ -177,12 +180,16 @@ fun HomeScreen(
                 }
             )
 
+            AIAssistantSection(
+                onChatClick = { navController.navigate(Screen.Chat.route) },
+                onVoiceClick = { navController.navigate(Screen.Voice.route) }
+            )
+
             FeatureCategory(
                 title = "Accessibility Tools",
                 items = listOf(
                     FeatureItem("Voice Assistant", "Speak to RAFIQ", Icons.Default.Mic, Cyan, Screen.Voice.route),
-                    FeatureItem("Sign Language", "Gesture recognition", Icons.Default.SignLanguage, Teal, Screen.SignLanguage.route),
-                    FeatureItem("Be My Eyes", "Live helper camera", Icons.Default.Visibility, Teal, Screen.BeMyEyes.route)
+                    FeatureItem("Sign Language", "Gesture recognition", Icons.Default.SignLanguage, Teal, Screen.SignLanguage.route)
                 ),
                 onNavigate = { route -> HapticFeedback.lightClick(context); navController.navigate(route) }
             )
@@ -235,7 +242,7 @@ private fun HeroHeader(
         modifier = Modifier
             .fillMaxWidth()
             .background(DeepBlue)
-            .padding(start = 20.dp, end = 20.dp, top = 40.dp, bottom = 20.dp)
+            .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 14.dp)
     ) {
         Column {
             Row(
@@ -245,15 +252,15 @@ private fun HeroHeader(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "RAFIQ",
-                        style = MaterialTheme.typography.headlineMedium,
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 3.sp,
                         color = Color.White
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "$greeting, Friend",
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = Color.White.copy(alpha = 0.6f)
                     )
                 }
@@ -263,19 +270,19 @@ private fun HeroHeader(
                         .clip(RoundedCornerShape(20.dp))
                         .background(Color.White.copy(alpha = 0.1f))
                         .clickable(onClick = onPointsClick)
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         Icons.Default.Star,
                         contentDescription = null,
                         tint = WarningAmber,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(14.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(5.dp))
                     Text(
                         text = "$points pts",
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.White
                     )
@@ -283,12 +290,12 @@ private fun HeroHeader(
             }
 
             if (guardianMode) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
                         .background(SuccessGreen.copy(alpha = 0.15f))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                        .padding(horizontal = 10.dp, vertical = 3.dp)
                 ) {
                     Text(
                         text = "Guardian Mode Active",
@@ -297,6 +304,76 @@ private fun HeroHeader(
                         color = SuccessGreen
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AssistantBookingCard(onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "bookingPress"
+    )
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .shadow(6.dp, RoundedCornerShape(16.dp), ambientColor = VividBlue.copy(alpha = 0.25f))
+            .alpha(scale)
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
+            .semantics { contentDescription = "Book a human assistant. Primary action." },
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(brush = Brush.linearGradient(listOf(VividBlue, Cyan))),
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.White.copy(alpha = 0.18f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.SupportAgent,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Book a Human Assistant",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Wheelchair, sign language, vision & more",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.85f)
+                    )
+                }
+                Icon(
+                    Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }

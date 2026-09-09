@@ -181,7 +181,7 @@ internal fun accessibilityFallbackReply(input: String): String {
                 "Open the Sign Language tab and point your camera at your hand! RAFIQ detects gestures like Thumbs Up, Victory, Fist, and Open Palm in real time."
 
             text.contains("eye") || text.contains("see") || text.contains("read") || text.contains("blind") || text.contains("vision") || text.contains("look") ->
-                "Use the Be My Eyes feature to point your camera at objects, signs, or text. RAFIQ will read and describe what's in front of you."
+                "I can help you understand what is around you. Try asking me to describe an object, a sign, or any text you point your camera at."
 
             text.contains("glass") || text.contains("bluetooth") || text.contains("hardware") || text.contains("device") || text.contains("headset") ->
                 "Smart glasses and accessibility headsets can read text and signs aloud when connected to your device. Check your device's Bluetooth settings to pair compatible hardware with the app."

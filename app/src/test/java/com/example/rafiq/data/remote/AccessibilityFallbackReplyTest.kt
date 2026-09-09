@@ -31,9 +31,9 @@ class AccessibilityFallbackReplyTest {
     }
 
     @Test
-    fun visionIntent_returnsBeMyEyesGuidance() {
-        val reply = accessibilityFallbackReply("help me read this page")
-        assertTrue(reply.contains("Be My Eyes"))
+fun visionIntent_returnsVisionGuidance() {
+        val reply = accessibilityFallbackReply("i can not see, help me read a sign")
+        assertTrue(reply.contains("camera"))
     }
 
     @Test

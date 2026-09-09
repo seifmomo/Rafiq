@@ -21,7 +21,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.rafiq.data.local.UserPreferences
 import com.example.rafiq.presentation.awareness.AwarenessScreen
-import com.example.rafiq.presentation.bemyeyes.BeMyEyesScreen
+import com.example.rafiq.presentation.assistant.AssistantBookingScreen
 import com.example.rafiq.presentation.chat.ChatScreen
 import com.example.rafiq.presentation.companionscore.CompanionScoreScreen
 import com.example.rafiq.presentation.contacts.ContactsScreen
@@ -49,7 +49,7 @@ sealed class Screen(val route: String) {
     object Voice : Screen("voice_screen")
     object Settings : Screen("settings_screen")
     object AddPlace : Screen("add_place_screen")
-    object BeMyEyes : Screen("be_my_eyes_screen")
+    object AssistantBooking : Screen("assistant_booking_screen")
     object SOS : Screen("sos_screen")
     object Learning : Screen("learning_screen")
     object Awareness : Screen("awareness_screen")
@@ -148,8 +148,8 @@ fun RafiqNavigation(
             composable(Screen.AddPlace.route) {
                 AddPlaceScreen(navController = navController)
             }
-            composable(Screen.BeMyEyes.route) {
-                BeMyEyesScreen(navController = navController)
+            composable(Screen.AssistantBooking.route) {
+                AssistantBookingScreen(navController = navController)
             }
             composable(Screen.SOS.route) {
                 SosScreen(navController = navController)

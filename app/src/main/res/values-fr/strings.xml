@@ -9,7 +9,7 @@
     <string name="nav_voice">Assistant Vocal</string>
     <string name="nav_settings">Paramètres</string>
     <string name="nav_sos">SOS Urgence</string>
-    <string name="nav_be_my_eyes">Sois Mes Yeux</string>
+    <string name="nav_assistant_booking">Réservation d\'assistant</string>
     <string name="nav_learning">Apprentissage</string>
     <string name="nav_awareness">Droits &amp; Sensibilisation</string>
     <string name="nav_hospital">Hôpital</string>
@@ -23,7 +23,6 @@
     <string name="learn">Apprendre</string>
     <string name="rights">Droits</string>
     <string name="hospital">Hôpital</string>
-    <string name="be_my_eyes">Sois Mes Yeux</string>
     <string name="emergency_sos">SOS URGENCE</string>
     <string name="home_screen_desc">Écran d\'accueil Rafiq</string>
 

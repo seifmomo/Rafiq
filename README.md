@@ -4,6 +4,15 @@
 
 > 🏆 **Competition / demo material is in [`docs/COMPETITION_PITCH.md`](docs/COMPETITION_PITCH.md)** — presentation prompt, slide-by-slide script, demo checklist, and judge Q&A.
 
+### 📦 Presentation & Pitch Files
+
+| File | What it is |
+|---|---|
+| 📊 [`docs/RAFIQ_pitch_deck.pptx`](docs/RAFIQ_pitch_deck.pptx) | **16-slide pitch deck** (AI-powered Accessibility Marketplace) — ready to present/edit |
+| 📋 [`docs/CLAUDE_IMPACTX_PROMPT.md`](docs/CLAUDE_IMPACTX_PROMPT.md) | **Claude/power-user prompt** — full Strategy Coach brief with project details pre-filled + all 7 tasks executed (validation, workload, 7:45 pitch timing, Q&A, 110-pt scorecard, timeline) |
+| 📚 [`docs/PROJECT_DETAILS.md`](docs/PROJECT_DETAILS.md) | **All project details & data** — problem, market, solution, business model (10 streams), unit economics, impact KPIs, SDGs, tech stack, roadmap |
+| 🎬 [`docs/AI_VIDEO_PROMPT.md`](docs/AI_VIDEO_PROMPT.md) | **AI video generator prompt** — 3-min pitch video + 60-sec reel + voiceover script (HeyGen/Synthesia/Runway/D-ID ready) |
+
 ---
 
 ## Mission
@@ -248,6 +257,8 @@ Password: demo1234
 | `./gradlew :app:assembleDebug` | Build debug APK |
 | `./gradlew :app:testDebugUnitTest` | Run unit tests |
 | `./gradlew :app:connectedDebugAndroidTest` | Run instrumentation tests (device required) |
+
+**Pitch / video generation:** the `.pptx` in `docs/` was generated with `python-pptx` from the same build script used for the original deck; the `docs/AI_VIDEO_PROMPT.md` prompt produces the pitch video from the deck content.
 
 ## UI Design Language
 

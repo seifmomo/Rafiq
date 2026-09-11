@@ -29,6 +29,7 @@ import com.example.rafiq.presentation.bookinghistory.BookingInvoiceScreen
 import com.example.rafiq.presentation.chat.ChatScreen
 import com.example.rafiq.presentation.companionscore.CompanionScoreScreen
 import com.example.rafiq.presentation.contacts.ContactsScreen
+import com.example.rafiq.presentation.fall.FallDetectionScreen
 import com.example.rafiq.presentation.gamification.AddPlaceScreen
 import com.example.rafiq.presentation.home.HomeScreen
 import com.example.rafiq.presentation.hospital.HospitalScreen
@@ -38,9 +39,11 @@ import com.example.rafiq.presentation.intro.LoginScreen
 import com.example.rafiq.presentation.learning.LearningScreen
 import com.example.rafiq.presentation.map.MapScreen
 import com.example.rafiq.presentation.medication.MedicationScreen
+import com.example.rafiq.presentation.payment.PaymentScreen
 import com.example.rafiq.presentation.settings.SettingsScreen
 import com.example.rafiq.presentation.sos.SosScreen
 import com.example.rafiq.presentation.signlanguage.SignLanguageScreen
+import com.example.rafiq.presentation.tracking.LiveTrackingScreen
 import com.example.rafiq.presentation.voice.VoiceScreen
 import com.example.rafiq.ui.components.RafiqBottomNavBar
 import kotlinx.coroutines.launch
@@ -67,6 +70,9 @@ sealed class Screen(val route: String) {
     object BookingInvoice : Screen("booking_invoice_screen/{bookingId}") {
         fun withId(bookingId: String) = "booking_invoice_screen/$bookingId"
     }
+    object FallDetection : Screen("fall_detection_screen")
+    object LiveTracking : Screen("live_tracking_screen")
+    object Payment : Screen("payment_screen")
 }
 
 private val bottomBarRoutes = setOf(
@@ -188,6 +194,15 @@ fun RafiqNavigation(
             }
             composable(Screen.BookingHistory.route) {
                 BookingHistoryScreen(navController = navController)
+            }
+            composable(Screen.FallDetection.route) {
+                FallDetectionScreen(navController = navController)
+            }
+            composable(Screen.LiveTracking.route) {
+                LiveTrackingScreen(navController = navController)
+            }
+            composable(Screen.Payment.route) {
+                PaymentScreen(navController = navController)
             }
             composable(
                 route = Screen.BookingInvoice.route,

@@ -6,6 +6,12 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// Enable the Firebase google-services plugin only once google-services.json is
+// present, so the build stays green before the user drops the file in.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.example.rafiq"
     compileSdk = 35
@@ -100,6 +106,21 @@ android {
             ?: "gemini-2.5-flash"
     }
 
+    val mapsApiKey: String = run {
+        val secretsFile: java.io.File = rootProject.file("gradle-secrets.properties")
+        var value: String? = null
+        if (secretsFile.exists()) {
+            value = secretsFile.readLines()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("MAPS_API_KEY=") }
+                ?.substringAfter("MAPS_API_KEY=")
+                ?.trim()
+        }
+        value
+            ?: (project.findProperty("MAPS_API_KEY") as? String)
+            ?: "AIzaSyBMwEpqklJs0_y6wxsT_SFOdqmC3h5TQmc"
+    }
+
     defaultConfig {
         applicationId = "com.example.rafiq"
         minSdk = 24
@@ -109,12 +130,15 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
         buildConfigField("String", "OPENAI_API_KEY", "\"$openAiApiKey\"")
         buildConfigField("String", "OPENAI_BASE_URL", "\"$openAiBaseUrl\"")
         buildConfigField("String", "OPENAI_MODEL", "\"$openAiModel\"")
         buildConfigField("String", "GEMINI_BASE_URL", "\"$geminiBaseUrl\"")
         buildConfigField("String", "GEMINI_MODEL", "\"$geminiModel\"")
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
     }
 
     buildTypes {
@@ -203,6 +227,12 @@ dependencies {
 
     // osmdroid (OpenStreetMap — no API key required)
     implementation(libs.osmdroid.android)
+
+    // Google Maps SDK — live tracking (demo key from gradle-secrets.properties)
+    implementation(libs.play.services.maps)
+
+    // Google Pay — sandbox payment scaffold
+    implementation(libs.play.services.wallet)
 
     // Retrofit + OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.11.0")

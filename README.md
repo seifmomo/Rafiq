@@ -40,7 +40,10 @@ RAFIQ is designed to be a **scalable startup** — pilot in Egypt, expand to the
 | 🤝 | **Assistant Booking** | Multi-step booking flow: select needs (wheelchair, sign language, hearing, vision, elderly, multiple) → journey (from → to, date/time, hourly budget, **recurring toggle**) → AI-matched assistant list (with **"Why this assistant?" match reasons**) → review & confirm with estimated hours + cost |
 | 📋 | **Booking History & Invoices** | Every confirmed booking is saved in Room — view history, per-booking **invoice** (reference, trip, cost breakdown, total), **rate your assistant 1–5 stars**, delete or rebook, live total-spent summary |
 | 🧠 | **AI Matching System** | Scores assistants by skill match to your needs, rating, distance, and budget; relaxes the budget limit gracefully; estimates hours from distance (15 km/hr, min 1 hr); explains every recommendation |
-| 📈 | **Fall Detection (classifier)** | Pure-Kotlin accelerometer classifier (impact spike + stillness) ready to auto-trigger SOS — unit-tested on the JVM |
+| 📈 | **Fall Detection (real SOS)** | Foreground `FallSensorService` watches the accelerometer (impact spike + stillness classifier) — on a fall you get a 10-second **"It's OK — cancel SOS"** notification, then the same SMS + Firebase alert the SOS button sends |
+| 📍 | **Live tracking (Google Maps)** | Real **Google Maps SDK** map that follows a live Firebase `locations/<user>/latest` ping every ~4s; foreground `LocationShareService` keeps sharing while backgrounded — guardian-ready |
+| 💳 | **Google Pay (sandbox)** | Wired Google Wallet `PaymentsClient` in **TEST** environment with a full pay-flow screen + token result — real device only (no emulator support) |
+| 🔔 | **Guardian push alerts** | `RafiqFirebaseMessagingService` plays a full-screen siren alert when a guardian push (FCM) with `emergency: "true"` arrives while **Guardian Mode** is on |
 | 👤 | **Accessibility Profiles** | Disability type & needs drive recommendations; preferences are reflected across booking and AI chat |
 | 🎙️ | **Voice Commands** | Speech-to-text with avatar; replies read aloud via TTS and saved to chat history |
 | ✋ | **Sign Language** | CameraX + MediaPipe: **10 signs** (Fist, Hello, A, Yes, No, Peace, I Love You, OK, Rock, L) with live TTS, fully on-device |
@@ -60,6 +63,8 @@ RAFIQ is designed to be a **scalable startup** — pilot in Egypt, expand to the
 | 🤝 **Book an assistant** | Home → **Book a Human Assistant** (primary action) → pick needs + from/to + date/time + budget (+ **recurring**) → **Find Assistants** → Select (see *Why?* reasons) → **Confirm Booking** → rate 1–5 stars |
 | 📋 **Booking history** | Home → **My Bookings** → tap **Invoice** on any booking, or rate/delete/rebook from the list |
 | 🆘 SOS | **SOS** → **SIMULATE ACCIDENTAL FALL** → countdown → cancel, or get Share/Call/Map fallback buttons |
+| 📈 Fall Detection | Home → **Fall Detection** → toggle **ON** (service starts) → drop the phone or shake hard → 10s "cancel SOS" notification → SOS text + Firebase alert |
+| 📍 Live Tracking | Home → **Live Tracking** → **Start sharing my location** → the Google Maps marker follows your live position (keep screen open, then watch pings update every ~4s) |
 | 🤖 Chat | **Chat** → type a message → AI replies (key configured) or the built-in accessibility fallback answers |
 | 🗺️ Map | **Map & Places** → see demo markers → **Open in Google Maps** to navigate |
 | ✋ Sign language | **Sign Language** → allow camera → show a sign (open palm = Hello) → TTS speaks it |
@@ -277,7 +282,7 @@ Password: demo1234
 
 ## Tech Stack
 
-- **App:** Kotlin, Jetpack Compose (Material 3), Hilt, Room, Retrofit/OkHttp, DataStore, Firebase (Realtime DB + Messaging), Google Play Services Location, **Google Gemini API** (default `gemini-2.5-flash`, OpenAI-compatible) or any OpenAI-compatible endpoint, **MediaPipe Tasks Vision**, CameraX, osmdroid (Carto Voyager tiles over OpenStreetMap data)
+- **App:** Kotlin, Jetpack Compose (Material 3), Hilt, Room, Retrofit/OkHttp, DataStore, Firebase (Realtime DB + Messaging), Google Play Services Location + **Google Maps SDK** + **Google Pay Wallet**, **Google Gemini API** (default `gemini-2.5-flash`, OpenAI-compatible) or any OpenAI-compatible endpoint, **MediaPipe Tasks Vision**, CameraX, osmdroid (Carto Voyager tiles as offline fallback)
 - **Backend:** Node.js, Express, PostgreSQL, JWT (bcryptjs + jsonwebtoken), ws, Helmet, CORS, rate limiting
 
 > **Google Integration story (IMPACT X +5 bonus):** MediaPipe (on-device sign-language, already shipped), Gemini API (AI assistant replies), Firebase (messaging/analytics), and Google Maps deep links make Google the engine of the product — not a logo.
@@ -294,13 +299,23 @@ All checks pass on every build:
 
 > **Runtime note:** SOS, sign-language recognition, the accessible map, and the intelligent AI reply engine all work **offline / without Firebase**. If Firebase isn't configured with your own `google-services.json`, the app degrades gracefully — SMS + Share/Call + Google-Maps SOS fallbacks still fire and the UI never crashes. The map loads **Carto Voyager (OSM data)** tiles with a real identifying User-Agent instead of `tile.openstreetmap.org`, which 403s demos under its tile usage policy.
 
+### Google-services (FCM / Firebase cloud) activation
+
+FCM push + Firebase location sync are **wired but dormant** until you drop a Firebase config in:
+
+1. Firebase console → add Android app (package `com.example.rafiq`) → download `google-services.json` into `app/`.
+2. The **google-services Gradle plugin is applied automatically the moment `app/google-services.json` exists** (build stays green without it), so just rebuild — token registration, push-to-alert (Guardian Mode ON), and the live-tracking cloud path light up.
+3. The **Google Maps demo key** is wired via `gradle-secrets.properties` (`MAPS_API_KEY=AIza...`; a fallback copy is baked into `app/build.gradle.kts`) and injected through the manifest placeholder `${MAPS_API_KEY}` — the Live Tracking screen renders Google Maps immediately.
+
+> **Google Pay** runs in `ENVIRONMENT_TEST` sandbox — test it on a real Android phone with Play services (the sheet never opens on an emulator). Prepare a Stripe test merchant + publishable key and swap them into `PaymentViewModel.kt` to receive a real payment token.
+
 ## Assistant Booking — Implementation Notes
 
 - **Domain:** `DisabilityNeed` (6 needs), `Assistant`, `BookingRequest` (+ `isRecurring`), `Booking`, `BookingRecord`, `MatchExplanation` in `domain/model`.
 - **Matching:** `AssistantRepositoryImpl` scores each assistant by how many selected needs their skills cover, then sorts by score → rating → distance; budget filter relaxes gracefully if nothing qualifies; `explainMatch()` returns a human-readable *why* for every recommendation.
 - **Estimates:** hours = distance/15 km (min 1), rounded to half-hours; cost = hours × hourly rate — shown before confirmation, on the confirmation screen, and itemized on the invoice.
 - **History & ratings:** confirmed bookings persist via Room (`BookingRecordEntity` / `BookingRecordDao`, DB v3) in `booking_records`; `BookingHistoryScreen` lists them newest-first with live total spent, inline 1–5 star rating, delete, and a full invoice screen.
-- **Fall detection:** `FallDetectionClassifier` (pure Kotlin) flags falls as impact spike ≥ 2.8 g followed by samples near 1 g — instrumented accelerometer wiring is the next step.
+- **Fall detection:** `FallDetectionClassifier` (pure Kotlin) flags falls as impact spike ≥ 2.8 g followed by samples near 1 g. **Wired end-to-end** via `FallSensorService` (foreground, accelerometer, rolling window) → 10s cancel window notification → shared `SosAlertSender` (SMS + Firebase). Both the manual SOS button and the sensor use the same alert path.
 - **Sample data:** 8 demo Cairo assistants (wheelchair, sign-language, vision, elderly, hearing, all-round) — replace with the live backend pool.
 
 ## Sign Language Recognition

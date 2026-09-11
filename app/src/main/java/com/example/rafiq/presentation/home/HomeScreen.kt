@@ -38,6 +38,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.LocalHospital
@@ -47,10 +48,12 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.SignLanguage
 import androidx.compose.material.icons.filled.Sos
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.SupportAgent
+import androidx.compose.material.icons.filled.TrackChanges
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material3.Button
@@ -216,7 +219,17 @@ fun HomeScreen(
                 title = "Navigation & Safety",
                 items = listOf(
                     FeatureItem("Map & Places", "Explore nearby", Icons.Default.LocationOn, Cyan, Screen.Map.route),
-                    FeatureItem("Safety Rights", "Know your rights", Icons.Default.Gavel, WarningAmber, Screen.Awareness.route)
+                    FeatureItem("Safety Rights", "Know your rights", Icons.Default.Gavel, WarningAmber, Screen.Awareness.route),
+                    FeatureItem("Fall Detection", "Auto SOS on falls", Icons.Default.Sensors, ErrorRed, Screen.FallDetection.route),
+                    FeatureItem("Live Tracking", "Follow me live", Icons.Default.TrackChanges, Cyan, Screen.LiveTracking.route)
+                ),
+                onNavigate = { route -> HapticFeedback.lightClick(context); navController.navigate(route) }
+            )
+
+            FeatureCategory(
+                title = "Trust & Payments",
+                items = listOf(
+                    FeatureItem("Google Pay", "Pay securely", Icons.Default.CreditCard, SuccessGreen, Screen.Payment.route)
                 ),
                 onNavigate = { route -> HapticFeedback.lightClick(context); navController.navigate(route) }
             )

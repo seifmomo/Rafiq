@@ -23,6 +23,8 @@ googleServices = "4.4.1"
 mediapipe = "0.10.21"
 camerax = "1.4.1"
 osmdroid = "6.1.18"
+playServicesMaps = "19.0.0"
+playServicesWallet = "19.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -85,6 +87,12 @@ camerax-view = { group = "androidx.camera", name = "camera-view", version.ref = 
 
 # osmdroid (OpenStreetMap — no API key required)
 osmdroid-android = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
+
+# Google Maps SDK (demo key supplied via gradle-secrets.properties)
+play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
+
+# Google Pay (sandbox)
+play-services-wallet = { group = "com.google.android.gms", name = "play-services-wallet", version.ref = "playServicesWallet" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

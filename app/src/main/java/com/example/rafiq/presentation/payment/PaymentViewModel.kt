@@ -89,7 +89,7 @@ class PaymentViewModel @Inject constructor() : ViewModel() {
     companion object {
         private const val GATEWAY = "stripe"
         private const val GATEWAY_MERCHANT_ID = "BCR2D4E"
-        private const val STRIPE_PUBLISHABLE_KEY = "pk_test_REPLACE_ME"
+        private const val STRIPE_PUBLISHABLE_KEY = "pk_test_51UEaNtFZ6DDBJZ4oYPq7V5UVqY3EVqxObKsb9vpd3y6EndKSHi5fwOTv9tFl4e9PxJFRRqD4SKvCSZZNWu0oijsZ00TeGrG5lu"
         private const val CURRENCY_CODE = "USD"
         private const val TOTAL_PRICE = "12.50"
 

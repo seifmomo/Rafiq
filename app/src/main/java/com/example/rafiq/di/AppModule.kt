@@ -2,14 +2,17 @@ package com.example.rafiq.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.rafiq.data.local.BookingRecordDao
 import com.example.rafiq.data.local.ChatMessageDao
 import com.example.rafiq.data.local.ContactDao
 import com.example.rafiq.data.local.MedicationDao
 import com.example.rafiq.data.local.PlaceDao
 import com.example.rafiq.data.local.RafiqDatabase
 import com.example.rafiq.data.repository.AssistantRepositoryImpl
+import com.example.rafiq.data.repository.BookingRepositoryImpl
 import com.example.rafiq.data.repository.PlaceRepositoryImpl
 import com.example.rafiq.domain.repository.AssistantRepository
+import com.example.rafiq.domain.repository.BookingRepository
 import com.example.rafiq.domain.repository.PlaceRepository
 import dagger.Binds
 import dagger.Module
@@ -33,6 +36,12 @@ abstract class AppBindsModule {
     abstract fun bindAssistantRepository(
         assistantRepositoryImpl: AssistantRepositoryImpl
     ): AssistantRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBookingRepository(
+        bookingRepositoryImpl: BookingRepositoryImpl
+    ): BookingRepository
 }
 
 @Module
@@ -68,5 +77,10 @@ object AppModule {
     @Provides
     fun provideChatMessageDao(database: RafiqDatabase): ChatMessageDao {
         return database.chatMessageDao()
+    }
+
+    @Provides
+    fun provideBookingRecordDao(database: RafiqDatabase): BookingRecordDao {
+        return database.bookingRecordDao()
     }
 }

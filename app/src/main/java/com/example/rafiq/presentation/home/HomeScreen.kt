@@ -38,6 +38,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.LocationOn
@@ -170,6 +171,13 @@ fun HomeScreen(
                 onClick = {
                     HapticFeedback.lightClick(context)
                     navController.navigate(Screen.AssistantBooking.route)
+                }
+            )
+
+            MyBookingsCard(
+                onClick = {
+                    HapticFeedback.lightClick(context)
+                    navController.navigate(Screen.BookingHistory.route)
                 }
             )
 
@@ -375,6 +383,68 @@ private fun AssistantBookingCard(onClick: () -> Unit) {
                     modifier = Modifier.size(24.dp)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun MyBookingsCard(onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "bookingsPress"
+    )
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 4.dp)
+            .shadow(4.dp, RoundedCornerShape(16.dp), ambientColor = Teal.copy(alpha = 0.2f))
+            .alpha(scale)
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Teal.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.DateRange,
+                    contentDescription = null,
+                    tint = Teal,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "My Bookings",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "History, invoices & ratings",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OnSurfaceVariant
+                )
+            }
+            Icon(
+                Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = OnSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }

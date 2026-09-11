@@ -7,7 +7,8 @@ data class BookingRequest(
     val toLocation: String,
     val preferredDate: String,
     val preferredTime: String,
-    val budgetPerHour: Double
+    val budgetPerHour: Double,
+    val isRecurring: Boolean = false
 )
 
 /** A confirmed booking with estimated time and cost. */

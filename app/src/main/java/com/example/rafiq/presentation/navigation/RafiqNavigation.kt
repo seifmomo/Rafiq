@@ -15,13 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.rafiq.data.local.UserPreferences
 import com.example.rafiq.presentation.awareness.AwarenessScreen
 import com.example.rafiq.presentation.assistant.AssistantBookingScreen
+import com.example.rafiq.presentation.bookinghistory.BookingHistoryScreen
+import com.example.rafiq.presentation.bookinghistory.BookingInvoiceScreen
 import com.example.rafiq.presentation.chat.ChatScreen
 import com.example.rafiq.presentation.companionscore.CompanionScoreScreen
 import com.example.rafiq.presentation.contacts.ContactsScreen
@@ -59,6 +63,10 @@ sealed class Screen(val route: String) {
     object Medication : Screen("medication_screen")
     object Chat : Screen("chat_screen")
     object SignLanguage : Screen("sign_language_screen")
+    object BookingHistory : Screen("booking_history_screen")
+    object BookingInvoice : Screen("booking_invoice_screen/{bookingId}") {
+        fun withId(bookingId: String) = "booking_invoice_screen/$bookingId"
+    }
 }
 
 private val bottomBarRoutes = setOf(
@@ -177,6 +185,18 @@ fun RafiqNavigation(
             }
             composable(Screen.SignLanguage.route) {
                 SignLanguageScreen(navController = navController)
+            }
+            composable(Screen.BookingHistory.route) {
+                BookingHistoryScreen(navController = navController)
+            }
+            composable(
+                route = Screen.BookingInvoice.route,
+                arguments = listOf(navArgument("bookingId") { type = NavType.StringType })
+            ) {
+                BookingInvoiceScreen(
+                    bookingId = it.arguments?.getString("bookingId").orEmpty(),
+                    navController = navController
+                )
             }
         }
     }

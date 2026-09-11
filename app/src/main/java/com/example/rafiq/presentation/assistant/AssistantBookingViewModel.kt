@@ -7,7 +7,9 @@ import com.example.rafiq.domain.model.Assistant
 import com.example.rafiq.domain.model.Booking
 import com.example.rafiq.domain.model.BookingRequest
 import com.example.rafiq.domain.model.DisabilityNeed
+import com.example.rafiq.domain.model.MatchExplanation
 import com.example.rafiq.domain.repository.AssistantRepository
+import com.example.rafiq.domain.repository.BookingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,10 +30,14 @@ data class AssistantBookingUiState(
     val preferredDate: String = "",
     val preferredTime: String = "",
     val budgetPerHour: Float = 150f,
+    val isRecurring: Boolean = false,
     val assistants: List<Assistant> = emptyList(),
+    val explanations: Map<String, MatchExplanation> = emptyMap(),
     val selectedAssistant: Assistant? = null,
     val booking: Booking? = null,
-    val searching: Boolean = false
+    val savedBookingId: String? = null,
+    val searching: Boolean = false,
+    val error: String? = null
 )
 
 object AssistantBookingSteps {
@@ -43,7 +49,8 @@ object AssistantBookingSteps {
 
 @HiltViewModel
 class AssistantBookingViewModel @Inject constructor(
-    private val assistantRepository: AssistantRepository
+    private val assistantRepository: AssistantRepository,
+    private val bookingRepository: BookingRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AssistantBookingUiState())
@@ -93,6 +100,8 @@ class AssistantBookingViewModel @Inject constructor(
 
     fun setBudgetPerHour(value: Float) = _uiState.update { it.copy(budgetPerHour = value) }
 
+    fun toggleRecurring() = _uiState.update { it.copy(isRecurring = !it.isRecurring) }
+
     fun canStartSearch(): Boolean {
         val state = _uiState.value
         return state.selectedNeeds.isNotEmpty() &&
@@ -114,12 +123,15 @@ class AssistantBookingViewModel @Inject constructor(
                 toLocation = state.toLocation.trim(),
                 preferredDate = state.preferredDate,
                 preferredTime = state.preferredTime,
-                budgetPerHour = state.budgetPerHour.toDouble()
+                budgetPerHour = state.budgetPerHour.toDouble(),
+                isRecurring = state.isRecurring
             )
             val results = assistantRepository.findAssistants(request)
+            val explanations = results.associateWith { assistantRepository.explainMatch(it, request) }
             _uiState.update {
                 it.copy(
                     assistants = results,
+                    explanations = explanations.entries.associate { (a, e) -> a.id to e },
                     searching = false,
                     step = AssistantBookingSteps.RESULTS
                 )
@@ -144,7 +156,8 @@ class AssistantBookingViewModel @Inject constructor(
             toLocation = state.toLocation.trim(),
             preferredDate = state.preferredDate,
             preferredTime = state.preferredTime,
-            budgetPerHour = state.budgetPerHour.toDouble()
+            budgetPerHour = state.budgetPerHour.toDouble(),
+            isRecurring = state.isRecurring
         )
         val refDate = SimpleDateFormat("yyyyMMdd", Locale.US).format(Date())
         val booking = Booking(
@@ -155,6 +168,24 @@ class AssistantBookingViewModel @Inject constructor(
             estimatedCost = cost.toDouble()
         )
         _uiState.update { it.copy(booking = booking, step = AssistantBookingSteps.CONFIRMED) }
+
+        viewModelScope.launch {
+            runCatching { bookingRepository.saveBooking(booking) }
+                .onSuccess { saved ->
+                    _uiState.update { it.copy(savedBookingId = saved.id) }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(error = e.message) }
+                }
+        }
+    }
+
+    fun rateBooking(rating: Int) {
+        val id = _uiState.value.savedBookingId ?: return
+        viewModelScope.launch {
+            runCatching { bookingRepository.rateBooking(id, rating) }
+                .onFailure { e -> _uiState.update { it.copy(error = e.message) } }
+        }
     }
 
     fun goBack() {

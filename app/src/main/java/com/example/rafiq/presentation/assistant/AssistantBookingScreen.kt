@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SignLanguage
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -53,6 +54,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -68,6 +71,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -79,6 +83,7 @@ import com.example.rafiq.domain.model.Assistant
 import com.example.rafiq.domain.model.Booking
 import com.example.rafiq.domain.model.BookingRequest
 import com.example.rafiq.domain.model.DisabilityNeed
+import com.example.rafiq.domain.model.MatchExplanation
 import com.example.rafiq.ui.components.AssistantCard
 import com.example.rafiq.ui.components.BookingSectionHeader
 import com.example.rafiq.ui.components.RafiqEmptyState
@@ -92,6 +97,8 @@ import com.example.rafiq.ui.theme.SurfaceContainer
 import com.example.rafiq.ui.theme.SurfaceDim
 import com.example.rafiq.ui.theme.Teal
 import com.example.rafiq.ui.theme.VividBlue
+import com.example.rafiq.ui.theme.WarningAmber
+import com.example.rafiq.util.HapticFeedback
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -101,6 +108,7 @@ fun AssistantBookingScreen(
     viewModel: AssistantBookingViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     Column(modifier = Modifier.fillMaxSize().background(SurfaceDim)) {
         val title = when (state.step) {
@@ -129,6 +137,8 @@ fun AssistantBookingScreen(
         if (state.step == AssistantBookingSteps.CONFIRMED) {
             ConfirmedStep(
                 booking = state.booking,
+                onRate = viewModel::rateBooking,
+                saved = state.savedBookingId != null,
                 onDone = { navController.popBackStack() },
                 onBookAnother = viewModel::resetAll
             )
@@ -146,6 +156,7 @@ fun AssistantBookingScreen(
                     AssistantBookingSteps.RESULTS -> {
                         ResultsStep(
                             assistants = state.assistants,
+                            explanations = state.explanations,
                             searching = state.searching,
                             onSelect = viewModel::selectAssistant
                         )
@@ -156,7 +167,10 @@ fun AssistantBookingScreen(
                             request = state.request,
                             assistant = state.selectedAssistant,
                             onSelectDifferent = viewModel::goBack,
-                            onConfirm = viewModel::confirmBooking
+                            onConfirm = {
+                                HapticFeedback.heavyClick(context)
+                                viewModel.confirmBooking()
+                            }
                         )
                     }
 
@@ -169,6 +183,7 @@ fun AssistantBookingScreen(
                             onDateChange = viewModel::setDate,
                             onTimeChange = viewModel::setTime,
                             onBudgetChange = viewModel::setBudgetPerHour,
+                            onToggleRecurring = viewModel::toggleRecurring,
                             onSearch = viewModel::findAssistants
                         )
                     }
@@ -234,6 +249,7 @@ private fun FormStep(
     onDateChange: (Long?) -> Unit,
     onTimeChange: (Int, Int) -> Unit,
     onBudgetChange: (Float) -> Unit,
+    onToggleRecurring: () -> Unit,
     onSearch: () -> Unit
 ) {
     Column(
@@ -336,6 +352,12 @@ private fun FormStep(
             )
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+        RecurringToggle(
+            enabled = state.isRecurring,
+            onChange = onToggleRecurring
+        )
+
         Spacer(modifier = Modifier.height(24.dp))
         val canSearch = state.selectedNeeds.isNotEmpty() &&
             state.fromLocation.isNotBlank() &&
@@ -356,6 +378,60 @@ private fun FormStep(
             )
         }
         Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RecurringToggle(
+    enabled: Boolean,
+    onChange: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (enabled) VividBlue.copy(alpha = 0.08f) else Color.White
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onChange)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.RestartAlt,
+                contentDescription = null,
+                tint = if (enabled) VividBlue else OnSurfaceVariant,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Recurring booking",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = OnSurface
+                )
+                Text(
+                    text = "Same assistant & schedule every week",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = OnSurfaceVariant
+                )
+            }
+            Switch(
+                checked = enabled,
+                onCheckedChange = { onChange() },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = VividBlue,
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = Outline
+                )
+            )
+        }
     }
 }
 
@@ -478,6 +554,7 @@ private fun TimeField(
 @Composable
 private fun ResultsStep(
     assistants: List<Assistant>,
+    explanations: Map<String, MatchExplanation>,
     searching: Boolean,
     onSelect: (Assistant) -> Unit
 ) {
@@ -515,10 +592,33 @@ private fun ResultsStep(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             items(assistants, key = { it.id }) { assistant ->
-                AssistantCard(
-                    assistant = assistant,
-                    onSelect = { onSelect(assistant) }
-                )
+                Column {
+                    AssistantCard(
+                        assistant = assistant,
+                        onSelect = { onSelect(assistant) }
+                    )
+                    explanations[assistant.id]?.let { explanation ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = SuccessGreen,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Why? ${explanation.summary}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = OnSurfaceVariant
+                            )
+                        }
+                    }
+                }
             }
             item { Spacer(modifier = Modifier.height(24.dp)) }
         }
@@ -699,16 +799,22 @@ private fun TripSummaryCard(request: BookingRequest) {
 @Composable
 private fun ConfirmedStep(
     booking: Booking?,
+    onRate: (Int) -> Unit,
+    saved: Boolean,
     onDone: () -> Unit,
     onBookAnother: () -> Unit
 ) {
+    var rating by remember { mutableStateOf(0) }
+    var rated by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
         Box(
             modifier = Modifier
                 .size(96.dp)
@@ -754,10 +860,58 @@ private fun ConfirmedStep(
                     DetailRow("Assistant", booking.assistant.name)
                     DetailRow("Estimated hours", "${"%.1f".format(booking.estimatedHours)} hr")
                     DetailRow("Estimated cost", "${booking.estimatedCost.toInt()} EGP")
+                    if (booking.request.isRecurring) {
+                        DetailRow("Schedule", "Repeats weekly")
+                    }
                 }
             }
         }
-        Spacer(modifier = Modifier.weight(1.5f))
+
+        if (saved && !rated) {
+            Spacer(modifier = Modifier.height(20.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "How was your assistant?",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = OnSurface
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        (1..5).forEach { star ->
+                            Icon(
+                                Icons.Default.Star,
+                                contentDescription = "$star stars",
+                                tint = if (star <= rating) WarningAmber else Outline,
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clickable {
+                                        rating = star
+                                        rated = true
+                                        onRate(star)
+                                    }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = if (rated) "Thanks for your feedback!" else "Tap a star to rate",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = OnSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
         Button(
             onClick = onDone,
             modifier = Modifier.fillMaxWidth(),
@@ -776,6 +930,7 @@ private fun ConfirmedStep(
             Spacer(modifier = Modifier.width(6.dp))
             Text("Book another assistant")
         }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
@@ -875,7 +1030,8 @@ private val AssistantBookingUiState.request: BookingRequest
         toLocation = toLocation.trim(),
         preferredDate = preferredDate,
         preferredTime = preferredTime,
-        budgetPerHour = budgetPerHour.toDouble()
+        budgetPerHour = budgetPerHour.toDouble(),
+        isRecurring = isRecurring
     )
 
 /** Rough estimate: 15 km covered per hour of assistance, minimum 1 hour. */

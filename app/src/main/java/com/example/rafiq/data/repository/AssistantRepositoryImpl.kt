@@ -3,6 +3,7 @@ package com.example.rafiq.data.repository
 import com.example.rafiq.domain.model.Assistant
 import com.example.rafiq.domain.model.BookingRequest
 import com.example.rafiq.domain.model.DisabilityNeed
+import com.example.rafiq.domain.model.MatchExplanation
 import com.example.rafiq.domain.repository.AssistantRepository
 import kotlinx.coroutines.delay
 import javax.inject.Inject
@@ -122,6 +123,18 @@ class AssistantRepositoryImpl @Inject constructor() : AssistantRepository {
         val withinBudget = matching.filter { it.hourlyPrice <= request.budgetPerHour }
         return if (withinBudget.isNotEmpty()) withinBudget else matching
             // relaxation: if no assistant fits the budget, still surface the best matches
+    }
+
+    override fun explainMatch(assistant: Assistant, request: BookingRequest): MatchExplanation {
+        val needs = request.needs.ifEmpty { setOf(DisabilityNeed.MULTIPLE) }
+        val matched = needs.filter { assistant.supports(it) }
+        val withinBudget = assistant.hourlyPrice <= request.budgetPerHour
+        return MatchExplanation(
+            assistant = assistant,
+            matchedNeeds = matched,
+            matchesBudget = withinBudget,
+            score = matched.size
+        )
     }
 
     companion object {

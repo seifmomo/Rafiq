@@ -37,8 +37,10 @@ RAFIQ is designed to be a **scalable startup** — pilot in Egypt, expand to the
 
 | | Feature | What it does |
 |---|---|---|
-| 🤝 | **Assistant Booking** | Multi-step booking flow: select needs (wheelchair, sign language, hearing, vision, elderly, multiple) → journey (from → to, date/time, hourly budget) → AI-matched assistant list → review & confirm with estimated hours + cost |
-| 🧠 | **AI Matching System** | Scores assistants by skill match to your needs, rating, distance, and budget; relaxes the budget limit gracefully; estimates hours from distance (15 km/hr, min 1 hr) |
+| 🤝 | **Assistant Booking** | Multi-step booking flow: select needs (wheelchair, sign language, hearing, vision, elderly, multiple) → journey (from → to, date/time, hourly budget, **recurring toggle**) → AI-matched assistant list (with **"Why this assistant?" match reasons**) → review & confirm with estimated hours + cost |
+| 📋 | **Booking History & Invoices** | Every confirmed booking is saved in Room — view history, per-booking **invoice** (reference, trip, cost breakdown, total), **rate your assistant 1–5 stars**, delete or rebook, live total-spent summary |
+| 🧠 | **AI Matching System** | Scores assistants by skill match to your needs, rating, distance, and budget; relaxes the budget limit gracefully; estimates hours from distance (15 km/hr, min 1 hr); explains every recommendation |
+| 📈 | **Fall Detection (classifier)** | Pure-Kotlin accelerometer classifier (impact spike + stillness) ready to auto-trigger SOS — unit-tested on the JVM |
 | 👤 | **Accessibility Profiles** | Disability type & needs drive recommendations; preferences are reflected across booking and AI chat |
 | 🎙️ | **Voice Commands** | Speech-to-text with avatar; replies read aloud via TTS and saved to chat history |
 | ✋ | **Sign Language** | CameraX + MediaPipe: **10 signs** (Fist, Hello, A, Yes, No, Peace, I Love You, OK, Rock, L) with live TTS, fully on-device |
@@ -55,7 +57,8 @@ RAFIQ is designed to be a **scalable startup** — pilot in Egypt, expand to the
 
 | Feature | Steps |
 |---|---|
-| 🤝 **Book an assistant** | Home → **Book a Human Assistant** (primary action) → pick needs + from/to + date/time + budget → **Find Assistants** → Select → **Confirm Booking** |
+| 🤝 **Book an assistant** | Home → **Book a Human Assistant** (primary action) → pick needs + from/to + date/time + budget (+ **recurring**) → **Find Assistants** → Select (see *Why?* reasons) → **Confirm Booking** → rate 1–5 stars |
+| 📋 **Booking history** | Home → **My Bookings** → tap **Invoice** on any booking, or rate/delete/rebook from the list |
 | 🆘 SOS | **SOS** → **SIMULATE ACCIDENTAL FALL** → countdown → cancel, or get Share/Call/Map fallback buttons |
 | 🤖 Chat | **Chat** → type a message → AI replies (key configured) or the built-in accessibility fallback answers |
 | 🗺️ Map | **Map & Places** → see demo markers → **Open in Google Maps** to navigate |
@@ -185,12 +188,15 @@ In the app today: users pick needs, journey, date/time and budget → the engine
 rafiq/
 ├── app/          Android app (Kotlin, Jetpack Compose, Hilt, Room)
 │   └── src/main/java/com/example/rafiq/
-│       ├── domain/model/            domain models (Assistant, DisabilityNeed, BookingRequest, Booking)
-│       ├── domain/repository/       repository interfaces (AssistantRepository, PlaceRepository)
+│       ├── domain/model/            domain models (Assistant, DisabilityNeed, BookingRequest, Booking, BookingRecord, MatchExplanation)
+│       ├── domain/repository/       repository interfaces (AssistantRepository, BookingRepository, PlaceRepository)
 │       ├── data/repository/         implementations + matching engine + sample Cairo assistant pool
-│       ├── presentation/assistant/  AssistantBookingViewModel + AssistantBookingScreen (form → results → confirm)
+│       ├── data/local/              Room: entities + DAOs (contacts, medications, places, chat, booking records)
+│       ├── presentation/assistant/  AssistantBookingViewModel + AssistantBookingScreen (form → results → confirm → rate)
+│       ├── presentation/bookinghistory/  Booking history + invoice screens with ratings
 │       ├── presentation/home/       Home screen with compact hero + primary booking action
 │       ├── presentation/signlanguage/  CameraX 🔗 MediaPipe gestures + landmark classifier (OK/Rock/L)
+│       ├── util/                    pure-Kotlin classifiers for fall detection, etc.
 │       └── ui/components/           reusable packaging (BookingComponents, RafiqComponents)
 ├── backend/      REST + WebSocket API (Express, PostgreSQL, JWT)
 └── gradle/       Gradle wrapper config
@@ -280,19 +286,21 @@ Password: demo1234
 
 All checks pass on every build:
 
-- ✅ **Unit tests** (`app/src/test`): **18/18 pass** — `AccessibilityFallbackReplyTest.kt` (10/10: SOS, hospitals, medications, sign language, vision, identity, greetings, unknown input) + `LandmarkGestureClassifierTest.kt` (8/8: OK/Rock/L hand-landmark classification).
+- ✅ **Unit tests** (`app/src/test`): **39/39 pass** — `AccessibilityFallbackReplyTest.kt` (10/10: SOS, hospitals, medications, sign language, vision, identity, greetings, unknown input) + `LandmarkGestureClassifierTest.kt` (8/8: OK/Rock/L hand-landmark classification) + `AssistantRepositoryImplTest.kt` (6/6: matching engine, hour estimates, match explanations) + `BookingRecordMapperTest.kt` (4/4: booking-history persistence mapping, rating clamping) + `FallDetectionClassifierTest.kt` (11/11: impact/stagnation fall algorithm on the JVM).
 - ✅ **Lint** (`:app:lintDebug`) — passes. The camera permission is paired with a required-`false` `<uses-feature>` so the app installs & runs on devices without a camera.
 - ✅ **Build** (`:app:assembleDebug`) — produces `app-debug.apk`.
-- **Instrumented tests** (`app/src/androidTest`, device required) — `RafiqDatabaseDaoTest.kt` exercises Contact, Medication, Place, and ChatMessage Room DAOs against an in-memory database. Run with `./gradlew :app:connectedDebugAndroidTest`.
+- **Instrumented tests** (`app/src/androidTest`, device required) — `RafiqDatabaseDaoTest.kt` exercises Contact, Medication, Place, and ChatMessage Room DAOs against an in-memory database. Run with `./gradlew :app:connectedDebugAndroidTest`. On a Xiaomi/HyperOS device enable **Developer options → Install via USB**, otherwise installs are blocked with `INSTALL_FAILED_USER_RESTRICTED`.
 - ✅ **Backend** — migrates, seeds, and serves all REST + WebSocket endpoints against PostgreSQL (verified live: health, auth, scoreboard, places, contacts).
 
 > **Runtime note:** SOS, sign-language recognition, the accessible map, and the intelligent AI reply engine all work **offline / without Firebase**. If Firebase isn't configured with your own `google-services.json`, the app degrades gracefully — SMS + Share/Call + Google-Maps SOS fallbacks still fire and the UI never crashes. The map loads **Carto Voyager (OSM data)** tiles with a real identifying User-Agent instead of `tile.openstreetmap.org`, which 403s demos under its tile usage policy.
 
 ## Assistant Booking — Implementation Notes
 
-- **Domain:** `DisabilityNeed` (6 needs), `Assistant`, `BookingRequest`, `Booking` in `domain/model`.
-- **Matching:** `AssistantRepositoryImpl` scores each assistant by how many selected needs their skills cover, then sorts by score → rating → distance; budget filter relaxes gracefully if nothing qualifies.
-- **Estimates:** hours = distance/15 km (min 1), rounded to half-hours; cost = hours × hourly rate — shown before confirmation and on the confirmation screen.
+- **Domain:** `DisabilityNeed` (6 needs), `Assistant`, `BookingRequest` (+ `isRecurring`), `Booking`, `BookingRecord`, `MatchExplanation` in `domain/model`.
+- **Matching:** `AssistantRepositoryImpl` scores each assistant by how many selected needs their skills cover, then sorts by score → rating → distance; budget filter relaxes gracefully if nothing qualifies; `explainMatch()` returns a human-readable *why* for every recommendation.
+- **Estimates:** hours = distance/15 km (min 1), rounded to half-hours; cost = hours × hourly rate — shown before confirmation, on the confirmation screen, and itemized on the invoice.
+- **History & ratings:** confirmed bookings persist via Room (`BookingRecordEntity` / `BookingRecordDao`, DB v3) in `booking_records`; `BookingHistoryScreen` lists them newest-first with live total spent, inline 1–5 star rating, delete, and a full invoice screen.
+- **Fall detection:** `FallDetectionClassifier` (pure Kotlin) flags falls as impact spike ≥ 2.8 g followed by samples near 1 g — instrumented accelerometer wiring is the next step.
 - **Sample data:** 8 demo Cairo assistants (wheelchair, sign-language, vision, elderly, hearing, all-round) — replace with the live backend pool.
 
 ## Sign Language Recognition
